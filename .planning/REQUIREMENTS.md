@@ -1,0 +1,135 @@
+# Requirements: ASQN 1st SFOD
+
+**Defined:** 2026-02-10
+**Core Value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
+
+## v1 Requirements
+
+Requirements for initial release. Each maps to roadmap phases.
+
+### Public Site
+
+- [ ] **SITE-01**: Visitor can view landing page with unit identity, overview, and enlist CTA
+- [ ] **SITE-02**: Visitor can view about page with unit history and mission
+- [ ] **SITE-03**: Visitor can view leadership page showing command structure with ranks and roles
+- [ ] **SITE-04**: Visitor can view ORBAT displaying Squadron A troop structure
+- [ ] **SITE-05**: Visitor can submit enlistment application with personal and gaming info
+- [ ] **SITE-06**: Visitor can view contact page with Discord link
+- [ ] **SITE-07**: Visitor can view rank chart showing SF rank progression
+- [ ] **SITE-08**: Visitor can view upcoming events (operations, training, FTX)
+- [ ] **SITE-09**: Visitor can view partial roster showing member names and ranks
+
+### Authentication
+
+- [ ] **AUTH-01**: User can log in via Discord OAuth
+- [ ] **AUTH-02**: User session persists across browser refresh via secure cookies
+- [ ] **AUTH-03**: System enforces 4-tier role hierarchy (Admin, Command, NCO, Member)
+- [ ] **AUTH-04**: Roles are embedded in JWT via custom access token hook for fast RLS checks
+
+### Soldier Profiles
+
+- [ ] **PROF-01**: Member can view their own profile (rank, callsign, MOS, status, unit assignment)
+- [ ] **PROF-02**: Member can view other members' profiles
+- [ ] **PROF-03**: Profile displays rank with full name and insignia image
+- [ ] **PROF-04**: Profile shows current unit assignment (troop and position)
+- [ ] **PROF-05**: Profile shows member status (Active, LOA, AWOL, Discharged/Retired)
+
+### Service Record
+
+- [ ] **SRVC-01**: Profile displays chronological service record (promotions, awards, quals, transfers)
+- [ ] **SRVC-02**: Service record entries are append-only with timestamp and performed-by
+- [ ] **SRVC-03**: Profile shows attendance stats (op count, attendance %, last active)
+- [ ] **SRVC-04**: Profile shows unit assignment history
+- [ ] **SRVC-05**: Profile shows combat record (missions participated, roles held per op)
+
+### Awards & Qualifications
+
+- [ ] **QUAL-01**: NCO+ can award qualifications to soldiers (certs: Marksman, CLS, JTAC, Breacher)
+- [ ] **QUAL-02**: NCO+ can record course completions (BCT, AIT, leadership courses)
+- [ ] **QUAL-03**: Command+ can award decorations to soldiers with citation
+- [ ] **QUAL-04**: Awards and qualifications display on soldier profile
+
+### Roster
+
+- [ ] **ROST-01**: Member can view roster as card grid with rank insignia and callsign
+- [ ] **ROST-02**: Member can view roster as hierarchical tree (Squadron > Troop > Soldier)
+- [ ] **ROST-03**: Member can view roster as sortable/filterable table
+- [ ] **ROST-04**: Member can toggle between roster views
+
+### Events & Attendance
+
+- [ ] **EVNT-01**: NCO+ can create events (operations, training, FTX) with date, type, and details
+- [ ] **EVNT-02**: NCO+ can edit and cancel events
+- [ ] **EVNT-03**: NCO+ can record attendance for each event (present, excused, absent)
+- [ ] **EVNT-04**: Member can view upcoming events list
+- [ ] **EVNT-05**: Attendance records link to soldier service record and profile stats
+
+### Enlistment Pipeline
+
+- [ ] **ENLS-01**: Applicant can submit enlistment form from public site
+- [ ] **ENLS-02**: Command+ can view pending applications in review queue
+- [ ] **ENLS-03**: Command+ can advance application through states (Review > Interview > Accept/Deny)
+- [ ] **ENLS-04**: Accepted application creates soldier profile automatically
+- [ ] **ENLS-05**: Application state transitions are enforced (no invalid jumps)
+
+### Personnel Actions
+
+- [ ] **PERS-01**: Command+ can promote/demote soldiers with reason logged to service record
+- [ ] **PERS-02**: Command+ can create transfer orders with effective date and reason
+- [ ] **PERS-03**: Admin can change member status (Active, LOA, AWOL, Discharged)
+- [ ] **PERS-04**: Command+ can add leadership-only notes to soldier records
+- [ ] **PERS-05**: Command+ can assign soldiers to troops and positions
+
+### Admin Dashboard
+
+- [ ] **ADMN-01**: Admin/Command can view dashboard with key metrics (member count, pending apps, attendance trends)
+- [ ] **ADMN-02**: Admin/Command can view recent personnel actions
+- [ ] **ADMN-03**: Admin/Command can view unit readiness overview (active vs LOA vs AWOL)
+
+## v2 Requirements
+
+Deferred to future release. Tracked but not in current roadmap.
+
+### Discord Integration
+
+- **DISC-01**: Rank/status changes automatically sync to Discord roles (bidirectional)
+- **DISC-02**: Discord bot verifies guild membership on login
+
+### Advanced Features
+
+- **ADVN-01**: After Action Report submission tied to events
+- **ADVN-02**: Service record displayed as visual timeline
+- **ADVN-03**: Qualification expiry tracking with admin alerts
+- **ADVN-04**: Public unit statistics counter (total members, ops completed, unit age)
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| In-game stat tracking (K/D, hours) | Breeds toxicity; breaks with Arma updates; attendance is the metric that matters |
+| Forum / discussion board | Discord already handles all unit communication |
+| Real-time chat on website | Duplicates Discord with zero benefit |
+| Public leaderboards | Conflicts with military culture model; awards system handles recognition |
+| Mod repository / file hosting | Steam Workshop handles this; storage costs not justified |
+| Integrated VOIP | Discord/TeamSpeak/ACRE2 already in use |
+| Finance / dues tracking | Unit is free; adding money creates unnecessary complexity |
+| Automated disciplinary tribunal | Over-engineering for 10-30 person unit; admin notes suffice |
+| Mobile app | Web-first with responsive design covers mobile |
+| Multi-squadron support | Building for Squadron A only |
+
+## Traceability
+
+Which phases cover which requirements. Updated during roadmap creation.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| (Updated during roadmap creation) | | |
+
+**Coverage:**
+- v1 requirements: 40 total
+- Mapped to phases: 0
+- Unmapped: 40
+
+---
+*Requirements defined: 2026-02-10*
+*Last updated: 2026-02-10 after initial definition*
