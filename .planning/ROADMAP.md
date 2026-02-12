@@ -126,12 +126,13 @@ Plans:
   3. A member can view the upcoming events list (already covered by Phase 2 public page; internal view now shows all event details)
   4. An Admin or Command member can view a dashboard showing member count, pending application count, and attendance trends
   5. The dashboard shows unit readiness state (count of Active vs. LOA vs. AWOL members) and a feed of recent personnel actions
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 06-01: Event creation, editing, and cancellation with NCO+ permission gate
-- [ ] 06-02: Attendance recording per event — present/excused/absent, service record linkage
-- [ ] 06-03: Admin dashboard — metrics, unit readiness overview, recent personnel actions feed
+- [ ] 06-01-PLAN.md — Migration (events UPDATE RLS), Zod schemas (event/operation/attendance), formatDate utility, nav links
+- [ ] 06-02-PLAN.md — Events CRUD: list, create, edit/cancel with NCO+ gating
+- [ ] 06-03-PLAN.md — Operations CRUD and per-soldier attendance recording with upsert
+- [ ] 06-04-PLAN.md — Admin dashboard: metrics, unit readiness, attendance trends, recent actions feed
 
 ---
 
@@ -149,8 +150,8 @@ Note: Phases 2 and 3 can overlap after Phase 1 — public site does not depend o
 | 3. Soldier Profiles and Service Records | 2/2 | Complete | 2026-02-11 |
 | 4. Awards, Qualifications, and Roster | 3/3 | Complete | 2026-02-11 |
 | 5. Enlistment Pipeline and Personnel Actions | 3/3 | Complete | 2026-02-11 |
-| 6. Events, Attendance, and Admin Dashboard | 0/3 | Not started | - |
+| 6. Events, Attendance, and Admin Dashboard | 0/4 | Planned | - |
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-11 after Phase 5 execution complete*
+*Last updated: 2026-02-11 after Phase 6 planning complete*
