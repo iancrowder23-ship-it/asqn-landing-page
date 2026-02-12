@@ -1031,40 +1031,36 @@ export type Database = {
       }
       operation_attendance: {
         Row: {
-          created_at: string | null
+          created_at: string
           id: string
-          member_id: string | null
           notes: string | null
-          operation_id: string | null
+          operation_id: string
           recorded_by: string | null
+          role_held: string | null
+          soldier_id: string
           status: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           id?: string
-          member_id?: string | null
           notes?: string | null
-          operation_id?: string | null
+          operation_id: string
           recorded_by?: string | null
+          role_held?: string | null
+          soldier_id: string
           status: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           id?: string
-          member_id?: string | null
           notes?: string | null
-          operation_id?: string | null
+          operation_id?: string
           recorded_by?: string | null
+          role_held?: string | null
+          soldier_id?: string
           status?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "operation_attendance_member_id_fkey"
-            columns: ["member_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "operation_attendance_operation_id_fkey"
             columns: ["operation_id"]
@@ -1073,63 +1069,46 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "operation_attendance_recorded_by_fkey"
-            columns: ["recorded_by"]
+            foreignKeyName: "operation_attendance_soldier_id_fkey"
+            columns: ["soldier_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "soldiers"
             referencedColumns: ["id"]
           },
         ]
       }
       operations: {
         Row: {
-          aar_url: string | null
-          commander_id: string | null
-          created_at: string | null
+          created_at: string
+          created_by: string | null
           description: string | null
-          duration_minutes: number | null
           id: string
-          name: string
           operation_date: string
           operation_type: string
-          status: string | null
-          updated_at: string | null
+          status: string
+          title: string
         }
         Insert: {
-          aar_url?: string | null
-          commander_id?: string | null
-          created_at?: string | null
+          created_at?: string
+          created_by?: string | null
           description?: string | null
-          duration_minutes?: number | null
           id?: string
-          name: string
           operation_date: string
           operation_type: string
-          status?: string | null
-          updated_at?: string | null
+          status?: string
+          title: string
         }
         Update: {
-          aar_url?: string | null
-          commander_id?: string | null
-          created_at?: string | null
+          created_at?: string
+          created_by?: string | null
           description?: string | null
-          duration_minutes?: number | null
           id?: string
-          name?: string
           operation_date?: string
           operation_type?: string
-          status?: string | null
-          updated_at?: string | null
+          status?: string
+          title?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "operations_commander_id_fkey"
-            columns: ["commander_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       permissions: {
         Row: {
