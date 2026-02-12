@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
-**Current focus:** Phase 3 COMPLETE (verified) — Phase 4 (Awards, Qualifications, and Roster) is next
+**Current focus:** Phase 4 (Awards, Qualifications, and Roster) — Plan 03 (Roster) complete
 
 ## Current Position
 
-Phase: 3 of 6 COMPLETE (Soldier Profiles and Service Records)
-Plan: 2 of 2 complete — Phase 3 fully done
-Status: Phase 3 verified and complete — ready for Phase 4
-Last activity: 2026-02-11 — Phase 3 executed (2 plans, 2 waves), verified, RLS gap fixed
+Phase: 4 of 6 IN PROGRESS (Awards, Qualifications, and Roster)
+Plan: 3 of 3 complete — Phase 4 fully done
+Status: Phase 4 complete — all 3 plans executed (awards, qualifications, roster)
+Last activity: 2026-02-12 — Phase 4 Plan 03 (roster page) executed
 
-Progress: [█████░░░░░] 50%
+Progress: [███████░░░] 66%
 
 ## Performance Metrics
 
@@ -36,6 +36,10 @@ Progress: [█████░░░░░] 50%
 - Parallel execution significantly reduced wall-clock time
 
 *Updated after each plan completion*
+
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| 04-awards-qualifications-roster P03 | 1 plan | 3 min | 3 min |
 
 ## Accumulated Context
 
@@ -68,6 +72,8 @@ Recent decisions affecting current work:
 - performed_by_name in service_records: read from payload JSON field (not performed_by UUID) — auth.users is not queryable via Supabase client
 - Assignment history derived from service_records transfer entries — no separate table needed
 - isOwnProfile computed server-side (JWT sub vs soldier.user_id) — keeps auth logic on server, avoids client-side auth check
+- [Phase 04-awards-qualifications-roster]: Internal roster at /roster replaces public (site)/roster: auth-protected three-view roster supersedes simple public table; route group conflict resolved by removing (site)/roster
+- [Phase 04-awards-qualifications-roster]: RosterTreeNode is a new component (not reusing OrbatNode): needs soldier IDs and profile links that OrbatNode lacks
 
 ### Pending Todos
 
@@ -82,7 +88,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-11
-Stopped at: Phase 3 verified and complete — all 5 success criteria met after RLS gap fix
+Last session: 2026-02-12
+Stopped at: Completed 04-awards-qualifications-roster plan 03 (roster page with three-view toggle)
 Resume file: None
-Next action: /gsd:plan-phase 4
+Next action: /gsd:plan-phase 5 (Promotion Workflow)
