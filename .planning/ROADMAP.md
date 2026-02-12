@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** — Discord OAuth, 4-tier RBAC, database schema with RLS, append-only service record model
 - [x] **Phase 2: Public Site** — Landing, about, ORBAT, rank chart, leadership, events list, enlistment form, partial roster, contact
-- [ ] **Phase 3: Soldier Profiles and Service Records** — Member profile pages, rank/insignia display, service record timeline, attendance stats, assignment history, combat record
+- [x] **Phase 3: Soldier Profiles and Service Records** — Member profile pages, rank/insignia display, service record timeline, attendance stats, assignment history, combat record
 - [ ] **Phase 4: Awards, Qualifications, and Roster** — Award and qualification granting, profile display, internal roster in card/tree/table views
 - [ ] **Phase 5: Enlistment Pipeline and Personnel Actions** — Enlistment review queue with state machine, soldier auto-creation on acceptance, promotions, transfers, status changes, notes
 - [ ] **Phase 6: Events, Attendance, and Admin Dashboard** — Event creation and management, attendance recording, service record linkage, admin metrics dashboard
@@ -73,8 +73,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Database migration (operations + operation_attendance tables, retired status, RLS policies), type regeneration, (app) layout with navigation and My Profile link
-- [ ] 03-02-PLAN.md — Soldier profile page with rank/insignia, status badge, service record timeline, attendance stats, combat record, and assignment history
+- [x] 03-01-PLAN.md — Database migration (operations + operation_attendance tables, retired status, RLS policies), type regeneration, (app) layout with navigation and My Profile link
+- [x] 03-02-PLAN.md — Soldier profile page with rank/insignia, status badge, service record timeline, attendance stats, combat record, and assignment history
 
 ---
 
@@ -147,11 +147,11 @@ Note: Phases 2 and 3 can overlap after Phase 1 — public site does not depend o
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete | 2026-02-11 |
 | 2. Public Site | 4/4 | Complete | 2026-02-11 |
-| 3. Soldier Profiles and Service Records | 0/2 | Planned | - |
+| 3. Soldier Profiles and Service Records | 2/2 | Complete | 2026-02-11 |
 | 4. Awards, Qualifications, and Roster | 0/3 | Not started | - |
 | 5. Enlistment Pipeline and Personnel Actions | 0/4 | Not started | - |
 | 6. Events, Attendance, and Admin Dashboard | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-11 after Phase 3 planning complete*
+*Last updated: 2026-02-11 after Phase 3 execution complete*

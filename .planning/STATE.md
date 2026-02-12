@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
-**Current focus:** Phase 3 COMPLETE — Phase 4 (Enlistment State Machine) is next
+**Current focus:** Phase 3 COMPLETE (verified) — Phase 4 (Awards, Qualifications, and Roster) is next
 
 ## Current Position
 
 Phase: 3 of 6 COMPLETE (Soldier Profiles and Service Records)
 Plan: 2 of 2 complete — Phase 3 fully done
-Status: Phase 3 complete — ready for Phase 4
-Last activity: 2026-02-12 — Phase 3 Plan 2 executed: soldier profile page + reusable components
+Status: Phase 3 verified and complete — ready for Phase 4
+Last activity: 2026-02-11 — Phase 3 executed (2 plans, 2 waves), verified, RLS gap fixed
 
-Progress: [████████░░] 42%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
-- Average duration: ~8 min
-- Total execution time: ~100 min
+- Total plans completed: 10
+- Average duration: ~10 min
+- Total execution time: ~120 min
 
 **By Phase:**
 
@@ -82,7 +82,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-12
-Stopped at: Phase 3 Plan 2 complete — soldier profile page + reusable components
+Last session: 2026-02-11
+Stopped at: Phase 3 verified and complete — all 5 success criteria met after RLS gap fix
 Resume file: None
-Next action: Plan Phase 4 (Enlistment State Machine) or execute if already planned
+Next action: /gsd:plan-phase 4
