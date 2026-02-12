@@ -4,6 +4,10 @@ import { zod4 } from 'sveltekit-superforms/adapters'
 import { hasRole } from '$lib/auth/roles'
 import { grantQualificationSchema } from '$lib/schemas/grantQualification'
 import { grantAwardSchema } from '$lib/schemas/grantAward'
+import { promoteActionSchema } from '$lib/schemas/promoteAction'
+import { transferActionSchema } from '$lib/schemas/transferAction'
+import { statusChangeActionSchema } from '$lib/schemas/statusChangeAction'
+import { addNoteActionSchema } from '$lib/schemas/addNoteAction'
 import type { PageServerLoad, Actions } from './$types'
 
 export const load: PageServerLoad = async ({ params, locals: { supabase, getClaims } }) => {
@@ -176,6 +180,44 @@ export const load: PageServerLoad = async ({ params, locals: { supabase, getClai
 		{ errors: false }
 	)
 
+	// 11. Fetch all ranks and units for personnel action forms (Command+ only)
+	const { data: allRanks } = hasRole(userRole, 'command')
+		? await supabase.from('ranks').select('id, name, abbreviation, sort_order').order('sort_order')
+		: { data: null }
+
+	const { data: allUnits } = hasRole(userRole, 'command')
+		? await supabase.from('units').select('id, name, abbreviation').order('name')
+		: { data: null }
+
+	// 12. Initialize superforms for personnel action forms
+	const promoteForm = hasRole(userRole, 'command')
+		? await superValidate(
+				{ from_rank_id: soldier.rank?.id ?? '', from_rank_name: soldier.rank?.name ?? '' },
+				zod4(promoteActionSchema),
+				{ errors: false }
+			)
+		: null
+
+	const transferForm = hasRole(userRole, 'command')
+		? await superValidate(
+				{ from_unit_id: soldier.unit?.id ?? null, from_unit_name: soldier.unit?.name ?? null, effective_date: todayDate },
+				zod4(transferActionSchema),
+				{ errors: false }
+			)
+		: null
+
+	const statusChangeForm = hasRole(userRole, 'admin')
+		? await superValidate(
+				{ from_status: soldier.status as 'active' | 'loa' | 'awol' | 'discharged' | 'retired' },
+				zod4(statusChangeActionSchema),
+				{ errors: false }
+			)
+		: null
+
+	const addNoteForm = hasRole(userRole, 'command')
+		? await superValidate(zod4(addNoteActionSchema), { errors: false })
+		: null
+
 	return {
 		soldier,
 		serviceRecords: serviceRecords ?? [],
@@ -190,6 +232,12 @@ export const load: PageServerLoad = async ({ params, locals: { supabase, getClai
 		memberAwards: memberAwards ?? [],
 		grantQualForm,
 		grantAwardForm,
+		allRanks: allRanks ?? [],
+		allUnits: allUnits ?? [],
+		promoteForm,
+		transferForm,
+		statusChangeForm,
+		addNoteForm,
 	}
 }
 
@@ -304,5 +352,207 @@ export const actions: Actions = {
 		}
 
 		return message(form, 'Award granted successfully')
+	},
+
+	promote: async ({ params, request, locals: { supabase, getClaims } }) => {
+		const claims = await getClaims()
+		const userRole = (claims?.['user_role'] as string) ?? null
+
+		if (!hasRole(userRole, 'command')) {
+			return fail(403, { message: 'Command or higher required' })
+		}
+
+		const form = await superValidate(request, zod4(promoteActionSchema))
+
+		if (!form.valid) {
+			return fail(400, { promoteForm: form })
+		}
+
+		const { new_rank_id, new_rank_name, from_rank_id, from_rank_name, reason } = form.data
+
+		// Update soldiers.rank_id
+		const { error: updateError } = await supabase
+			.from('soldiers')
+			.update({ rank_id: new_rank_id })
+			.eq('id', params.id)
+
+		if (updateError) {
+			console.error('soldiers rank_id update error:', updateError)
+			return message(form, 'Failed to update rank', { status: 500 })
+		}
+
+		// Fetch performer display_name for service record payload
+		const { data: performer } = await supabase
+			.from('soldiers')
+			.select('display_name')
+			.eq('user_id', claims?.sub as string)
+			.maybeSingle()
+
+		const performed_by_name = performer?.display_name ?? 'Unknown'
+
+		// Dual-write: insert into service_records
+		const { error: srError } = await supabase.from('service_records').insert({
+			soldier_id: params.id,
+			action_type: 'rank_change',
+			payload: { from_rank_id, from_rank_name, to_rank_id: new_rank_id, to_rank_name: new_rank_name, reason, performed_by_name },
+			performed_by: claims?.sub as string,
+			visibility: 'public',
+		})
+
+		if (srError) {
+			console.error('service_records insert error (rank_change):', srError)
+			// Non-fatal: rank already updated, just log the error
+		}
+
+		return message(form, 'Rank change recorded successfully')
+	},
+
+	transfer: async ({ params, request, locals: { supabase, getClaims } }) => {
+		const claims = await getClaims()
+		const userRole = (claims?.['user_role'] as string) ?? null
+
+		if (!hasRole(userRole, 'command')) {
+			return fail(403, { message: 'Command or higher required' })
+		}
+
+		const form = await superValidate(request, zod4(transferActionSchema))
+
+		if (!form.valid) {
+			return fail(400, { transferForm: form })
+		}
+
+		const { new_unit_id, new_unit_name, from_unit_id, from_unit_name, effective_date, reason } = form.data
+
+		// Update soldiers.unit_id
+		const { error: updateError } = await supabase
+			.from('soldiers')
+			.update({ unit_id: new_unit_id })
+			.eq('id', params.id)
+
+		if (updateError) {
+			console.error('soldiers unit_id update error:', updateError)
+			return message(form, 'Failed to update unit assignment', { status: 500 })
+		}
+
+		// Fetch performer display_name for service record payload
+		const { data: performer } = await supabase
+			.from('soldiers')
+			.select('display_name')
+			.eq('user_id', claims?.sub as string)
+			.maybeSingle()
+
+		const performed_by_name = performer?.display_name ?? 'Unknown'
+
+		// Dual-write: insert into service_records
+		const { error: srError } = await supabase.from('service_records').insert({
+			soldier_id: params.id,
+			action_type: 'transfer',
+			payload: { from_unit_id, from_unit_name, to_unit_id: new_unit_id, to_unit_name: new_unit_name, effective_date, reason, performed_by_name },
+			performed_by: claims?.sub as string,
+			visibility: 'public',
+		})
+
+		if (srError) {
+			console.error('service_records insert error (transfer):', srError)
+			// Non-fatal: transfer already recorded, just log the error
+		}
+
+		return message(form, 'Transfer order recorded successfully')
+	},
+
+	statusChange: async ({ params, request, locals: { supabase, getClaims } }) => {
+		const claims = await getClaims()
+		const userRole = (claims?.['user_role'] as string) ?? null
+
+		// Admin-only: explicit check for 'admin' role (not command)
+		if (!hasRole(userRole, 'admin')) {
+			return fail(403, { message: 'Admin required' })
+		}
+
+		const form = await superValidate(request, zod4(statusChangeActionSchema))
+
+		if (!form.valid) {
+			return fail(400, { statusChangeForm: form })
+		}
+
+		const { new_status, from_status, reason } = form.data
+
+		// Update soldiers.status
+		const { error: updateError } = await supabase
+			.from('soldiers')
+			.update({ status: new_status })
+			.eq('id', params.id)
+
+		if (updateError) {
+			console.error('soldiers status update error:', updateError)
+			return message(form, 'Failed to update status', { status: 500 })
+		}
+
+		// Fetch performer display_name for service record payload
+		const { data: performer } = await supabase
+			.from('soldiers')
+			.select('display_name')
+			.eq('user_id', claims?.sub as string)
+			.maybeSingle()
+
+		const performed_by_name = performer?.display_name ?? 'Unknown'
+
+		// Dual-write: insert into service_records
+		const { error: srError } = await supabase.from('service_records').insert({
+			soldier_id: params.id,
+			action_type: 'status_change',
+			payload: { from_status, to_status: new_status, reason, performed_by_name },
+			performed_by: claims?.sub as string,
+			visibility: 'public',
+		})
+
+		if (srError) {
+			console.error('service_records insert error (status_change):', srError)
+			// Non-fatal: status already updated, just log the error
+		}
+
+		return message(form, 'Status change recorded successfully')
+	},
+
+	addNote: async ({ params, request, locals: { supabase, getClaims } }) => {
+		const claims = await getClaims()
+		const userRole = (claims?.['user_role'] as string) ?? null
+
+		if (!hasRole(userRole, 'command')) {
+			return fail(403, { message: 'Command or higher required' })
+		}
+
+		const form = await superValidate(request, zod4(addNoteActionSchema))
+
+		if (!form.valid) {
+			return fail(400, { addNoteForm: form })
+		}
+
+		const { note_text } = form.data
+
+		// Fetch performer display_name for service record payload
+		const { data: performer } = await supabase
+			.from('soldiers')
+			.select('display_name')
+			.eq('user_id', claims?.sub as string)
+			.maybeSingle()
+
+		const performed_by_name = performer?.display_name ?? 'Unknown'
+
+		// Insert into service_records ONLY (no soldiers table mutation for notes)
+		const { error: srError } = await supabase.from('service_records').insert({
+			soldier_id: params.id,
+			action_type: 'note',
+			payload: { note_text, performed_by_name },
+			performed_by: claims?.sub as string,
+			visibility: 'leadership_only',
+		})
+
+		if (srError) {
+			console.error('service_records insert error (note):', srError)
+			return message(form, 'Failed to add note', { status: 500 })
+		}
+
+		return message(form, 'Note added successfully')
 	},
 }
