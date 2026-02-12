@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-02-10)
 ## Current Position
 
 Phase: 1 of 6 (Foundation)
-Plan: 1 of 4 in current phase
-Status: Executing — plan 01-01 complete, plan 01-02 next
-Last activity: 2026-02-12 — Plan 01-01 (SvelteKit scaffold) complete
+Plan: 2 of 4 in current phase
+Status: Executing — plan 01-02 complete, plan 01-03 next
+Last activity: 2026-02-12 — Plan 01-02 (Discord OAuth auth) complete
 
-Progress: [█░░░░░░░░░] 4%
+Progress: [██░░░░░░░░] 8%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 3 min
-- Total execution time: 3 min
+- Total plans completed: 2
+- Average duration: 2.5 min
+- Total execution time: 5 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 1/4 | 3 min | 3 min |
+| 01-foundation | 2/4 | 5 min | 2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min
+- Last 5 plans: 3 min, 2 min
 - Trend: -
 
 *Updated after each plan completion*
@@ -50,6 +50,9 @@ Recent decisions affecting current work:
 - adapter-node explicit: Changed from adapter-auto default — unambiguous Docker/VPS deployment target
 - Docker two-stage build: builder/runner pattern with node:22-alpine keeps production image small
 - NPM_CONFIG_PREFIX workaround: NPM_CONFIG_PREFIX=/nonexistent in shell env — all npm/npx commands require env -u NPM_CONFIG_PREFIX prefix
+- getClaims() pattern: auth.getClaims() used directly — available in @supabase/supabase-js v2.95.3, no manual JWT decode needed
+- Cookie path '/': enforced in setAll handler in createSupabaseServerClient — required for cross-route persistence
+- createSupabaseServerClient uses `any` generic temporarily — plan 01-03 will replace with typed Database
 
 ### Pending Todos
 
@@ -64,6 +67,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Plan 01-01 complete — SvelteKit scaffold with Tailwind v4 + adapter-node + Docker
+Stopped at: Plan 01-02 complete — Discord OAuth auth with getClaims(), session cookies, and /(app) route guard
 Resume file: None
-Next action: Execute plan 01-02 (Supabase auth integration)
+Next action: Execute plan 01-03 (database schema + typed database.ts generation)
