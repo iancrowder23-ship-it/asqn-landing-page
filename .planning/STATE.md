@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-10)
 ## Current Position
 
 Phase: 1 of 6 (Foundation)
-Plan: 3 of 4 in current phase
-Status: Executing — plan 01-03 complete, plan 01-04 next
-Last activity: 2026-02-12 — Plan 01-03 (database schema + RLS + typed Database) complete
+Plan: 4 of 4 in current phase
+Status: Phase 1 complete — all 4 plans done, ready for Phase 2
+Last activity: 2026-02-11 — Plan 01-04 (Custom Access Token Hook + end-to-end auth verification) complete
 
-Progress: [███░░░░░░░] 12%
+Progress: [████░░░░░░] 17%
 
 ## Performance Metrics
 
@@ -27,11 +27,11 @@ Progress: [███░░░░░░░] 12%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 3/4 | 20 min | 6.3 min |
+| 01-foundation | 4/4 | 65 min | 16.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min, 2 min, 15 min
-- Trend: plan 01-03 was longer due to schema conflict resolution
+- Last 5 plans: 3 min, 2 min, 15 min, 45 min
+- Trend: plan 01-04 longer due to Dashboard setup + end-to-end human verification
 
 *Updated after each plan completion*
 
@@ -56,6 +56,9 @@ Recent decisions affecting current work:
 - Schema migration: prior asqn-project-1 schema dropped via CASCADE — user approved Option A (drop and migrate fresh)
 - Supabase CLI auth: SUPABASE_ACCESS_TOKEN extracted from ~/.claude/.credentials.json mcpOAuth entry (sbp_oauth_ token)
 - RLS append-only: service_records has no UPDATE/DELETE policies — absence of policy = deny in RLS
+- Custom Access Token Hook: registered in Supabase Dashboard (not via SQL) — injects user_role into every JWT at login/refresh
+- Discord provider manual enable: Discord OAuth must be explicitly enabled in Supabase Dashboard > Authentication > Providers
+- user_roles locked to auth admin only: REVOKE ALL from authenticated/anon — only supabase_auth_admin can SELECT, preventing role spoofing
 
 ### Pending Todos
 
@@ -70,7 +73,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-12
-Stopped at: Plan 01-03 complete — 5-table schema with RLS, baseline policies, typed database.ts generated
+Last session: 2026-02-11
+Stopped at: Plan 01-04 complete — Custom Access Token Hook deployed, end-to-end auth verified, Phase 1 complete
 Resume file: None
-Next action: Execute plan 01-04 (Custom Access Token Hook — injects user_role into JWT)
+Next action: Begin Phase 2 planning
