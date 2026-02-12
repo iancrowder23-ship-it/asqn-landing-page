@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-10)
 
 ## Current Position
 
-Phase: 6 of 6 COMPLETE (Events, Attendance, Admin Dashboard)
-Plan: 4 of 4 complete
-Status: Phase 6 verified and complete — 5/5 success criteria met. All 6 phases done.
-Last activity: 2026-02-11 — Phase 6 executed (4 plans, 2 waves), verified (5/5 criteria passed)
+Phase: 7 of 7 (Gap Closure)
+Plan: 1 of 1 complete
+Status: Phase 7 Plan 1 complete — all 3 v1.0 audit gaps closed (logout, public events, assignment history keys)
+Last activity: 2026-02-12 — Phase 7 Plan 1 executed (2 tasks)
 
 Progress: [██████████] 100%
 
@@ -100,10 +100,13 @@ Recent decisions affecting current work:
 - [Phase 06-events-attendance-and-admin-dashboard P03]: Per-row forms use plain use:enhance from $app/forms (not superforms) — each soldier row is its own <form> element; server still uses superValidate for validation
 - [Phase 06-events-attendance-and-admin-dashboard P03]: Form-as-div-row layout — form wraps CSS grid div row (not table tr) because Svelte enforces form cannot be child of tr (node_invalid_placement error)
 - [Phase 06-events-attendance-and-admin-dashboard P03]: existingAttendance map built server-side as Record<soldier_id, {status, role_held, notes}> for O(1) lookup in per-row form template
+- [Phase 07-gap-closure P01]: Public events under (site) route group — (app)/events listing deleted to prevent /events URL conflict; auth-gated create/edit routes remain
+- [Phase 07-gap-closure P01]: Logout route has no +page.svelte — POST action redirects to / before any page render, no UI needed
+- [Phase 07-gap-closure P01]: Public events filter to status=scheduled with ascending date order; no admin controls visible to unauthenticated visitors
 
 ### Pending Todos
 
-None yet.
+None.
 
 ### Blockers/Concerns
 
@@ -114,7 +117,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-11
-Stopped at: Phase 6 verified and complete — all 6 phases done
+Last session: 2026-02-12
+Stopped at: Phase 7 Plan 1 complete — gap closure done, all v1.0 audit gaps closed
 Resume file: None
-Next action: /gsd:complete-milestone — archive milestone v1.0
+Next action: v1.0 gap closure complete — project ready for deployment or next milestone
