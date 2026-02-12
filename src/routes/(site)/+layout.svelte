@@ -8,7 +8,6 @@
     { href: '/orbat', label: 'ORBAT' },
     { href: '/rank-chart', label: 'Rank Chart' },
     { href: '/events', label: 'Events' },
-    { href: '/roster', label: 'Roster' },
     { href: '/contact', label: 'Contact' },
   ]
 </script>
