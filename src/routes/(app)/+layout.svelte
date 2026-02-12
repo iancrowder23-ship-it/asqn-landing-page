@@ -15,6 +15,7 @@
         </a>
         <div class="flex items-center gap-4 text-sm">
           <a href="/dashboard" class="text-steel hover:text-ranger-tan transition-colors">Dashboard</a>
+          <a href="/roster" class="text-steel hover:text-ranger-tan transition-colors">Roster</a>
           {#if data.mySoldierId}
             <a href="/soldiers/{data.mySoldierId}" class="text-steel hover:text-ranger-tan transition-colors">My Profile</a>
           {/if}
