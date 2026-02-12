@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
-**Current focus:** Phase 1 — Foundation
+**Current focus:** Phase 2 — Public Site
 
 ## Current Position
 
-Phase: 1 of 6 (Foundation)
-Plan: 4 of 4 in current phase
-Status: Phase 1 complete — all 4 plans done, ready for Phase 2
-Last activity: 2026-02-11 — Plan 01-04 (Custom Access Token Hook + end-to-end auth verification) complete
+Phase: 2 of 6 (Public Site)
+Plan: 0 of 4 in current phase
+Status: Planned — ready to execute
+Last activity: 2026-02-11 — Phase 2 plans created (4 plans, 2 waves), plan check passed
 
 Progress: [████░░░░░░] 17%
 
@@ -74,6 +74,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Plan 01-04 complete — Custom Access Token Hook deployed, end-to-end auth verified, Phase 1 complete
+Stopped at: Phase 2 planned — 4 plans, 2 waves, plan check passed
 Resume file: None
-Next action: Begin Phase 2 planning
+Next action: /gsd:execute-phase 2
