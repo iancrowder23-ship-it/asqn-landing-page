@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
-**Current focus:** Phase 5 COMPLETE (verified) — Phase 6 (Events, Attendance, Admin Dashboard) is next
+**Current focus:** Phase 6 (Events, Attendance, Admin Dashboard) — Plan 1 of 4 complete
 
 ## Current Position
 
-Phase: 5 of 6 COMPLETE (Enlistment Pipeline and Personnel Actions)
-Plan: 3 of 3 complete — Phase 5 fully done
-Status: Phase 5 verified and complete — ready for Phase 6
-Last activity: 2026-02-11 — Phase 5 executed (3 plans, 2 waves), verified (5/5 criteria passed)
+Phase: 6 of 6 IN PROGRESS (Events, Attendance, Admin Dashboard)
+Plan: 1 of 4 complete
+Status: Phase 6 Wave 1 complete — Wave 2 (plans 02, 03, 04) ready to execute in parallel
+Last activity: 2026-02-12 — Phase 6 Plan 1 executed (foundation: RLS migration, Zod schemas, date utility, nav)
 
-Progress: [█████████░] 83%
+Progress: [█████████░] 85%
 
 ## Performance Metrics
 
@@ -87,6 +87,9 @@ Recent decisions affecting current work:
 - [Phase 05-enlistment-pipeline-and-personnel-actions P03]: statusChange action checks hasRole(userRole, 'admin') specifically — admin-exclusive even though admin outranks command
 - [Phase 05-enlistment-pipeline-and-personnel-actions P03]: addNote inserts only to service_records (no soldiers column mutation) — notes are ephemeral audit records, not persistent soldier state
 - [Phase 05-enlistment-pipeline-and-personnel-actions P03]: Null superForm pattern for non-Command users — destructure returns null for enhance/errors/message, form content guarded by data.promoteForm conditional
+- [Phase 06-events-attendance-and-admin-dashboard P01]: recordAttendanceSchema is per-row (not bulk array) — simpler for small milsim rosters, per phase research recommendation
+- [Phase 06-events-attendance-and-admin-dashboard P01]: formatDate uses em-dash (U+2014) separator matching existing (site)/events implementation for consistency
+- [Phase 06-events-attendance-and-admin-dashboard P01]: Supabase migration repair command resolves history drift when migration was applied but not recorded
 
 ### Pending Todos
 
@@ -101,7 +104,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-11
-Stopped at: Phase 5 verified and complete — 5/5 success criteria met
+Last session: 2026-02-12
+Stopped at: Completed 06-01-PLAN.md — Phase 6 foundation (RLS, Zod schemas, formatDate, nav links)
 Resume file: None
-Next action: /gsd:plan-phase 6
+Next action: Execute Phase 6 Wave 2 plans (06-02, 06-03, 06-04) — can run in parallel
