@@ -525,9 +525,9 @@
 						{#each data.assignmentHistory as entry (entry.occurred_at)}
 							<div class="text-sm border-b border-night-border last:border-0 pb-2 last:pb-0">
 								<p class="text-steel">
-									{(entry.payload.from_unit as string | undefined) ?? '—'}
+									{(entry.payload.from_unit_name as string | undefined) ?? '—'}
 									→
-									{(entry.payload.to_unit as string | undefined) ?? '—'}
+									{(entry.payload.to_unit_name as string | undefined) ?? '—'}
 								</p>
 								<p class="text-steel/50 text-xs">{formatDate(entry.occurred_at)}</p>
 							</div>
