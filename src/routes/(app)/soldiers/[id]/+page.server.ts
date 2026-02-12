@@ -1,9 +1,15 @@
-import { error } from '@sveltejs/kit'
-import type { PageServerLoad } from './$types'
+import { error, fail } from '@sveltejs/kit'
+import { superValidate, message } from 'sveltekit-superforms'
+import { zod4 } from 'sveltekit-superforms/adapters'
+import { hasRole } from '$lib/auth/roles'
+import { grantQualificationSchema } from '$lib/schemas/grantQualification'
+import { grantAwardSchema } from '$lib/schemas/grantAward'
+import type { PageServerLoad, Actions } from './$types'
 
 export const load: PageServerLoad = async ({ params, locals: { supabase, getClaims } }) => {
 	const claims = await getClaims()
 	const viewerUserId = claims?.sub as string | undefined
+	const userRole = (claims?.['user_role'] as string) ?? null
 
 	// 1. Fetch soldier profile with rank and unit joins
 	const { data: rawSoldier } = await supabase
@@ -133,6 +139,34 @@ export const load: PageServerLoad = async ({ params, locals: { supabase, getClai
 			payload: r.payload as Record<string, unknown>,
 		}))
 
+	// 6. Fetch available qualifications for grant form (NCO+ only)
+	const { data: qualifications } = hasRole(userRole, 'nco')
+		? await supabase.from('qualifications').select('id, name, abbreviation, category').order('name')
+		: { data: null }
+
+	// 7. Fetch available awards for grant form (Command+ only)
+	const { data: awards } = hasRole(userRole, 'command')
+		? await supabase.from('awards').select('id, name, abbreviation, award_type').order('precedence')
+		: { data: null }
+
+	// 8. Fetch member qualifications for display
+	const { data: memberQualifications } = await supabase
+		.from('member_qualifications')
+		.select('id, awarded_date, expiration_date, status, notes, qualifications ( id, name, abbreviation, badge_url, category )')
+		.eq('member_id', params.id)
+		.order('awarded_date', { ascending: false })
+
+	// 9. Fetch member awards for display
+	const { data: memberAwards } = await supabase
+		.from('member_awards')
+		.select('id, awarded_date, citation, awards ( id, name, abbreviation, ribbon_url, award_type )')
+		.eq('member_id', params.id)
+		.order('awarded_date', { ascending: false })
+
+	// 10. Initialize superforms for grant forms
+	const grantQualForm = await superValidate(zod4(grantQualificationSchema))
+	const grantAwardForm = await superValidate(zod4(grantAwardSchema))
+
 	return {
 		soldier,
 		serviceRecords: serviceRecords ?? [],
@@ -140,5 +174,126 @@ export const load: PageServerLoad = async ({ params, locals: { supabase, getClai
 		combatRecord,
 		assignmentHistory,
 		isOwnProfile: soldier.user_id === viewerUserId,
+		userRole,
+		qualifications: qualifications ?? [],
+		awards: awards ?? [],
+		memberQualifications: memberQualifications ?? [],
+		memberAwards: memberAwards ?? [],
+		grantQualForm,
+		grantAwardForm,
 	}
+}
+
+export const actions: Actions = {
+	grantQualification: async ({ params, request, locals: { supabase, getClaims } }) => {
+		const claims = await getClaims()
+		const userRole = (claims?.['user_role'] as string) ?? null
+
+		if (!hasRole(userRole, 'nco')) {
+			return fail(403, { message: 'NCO or higher required' })
+		}
+
+		const form = await superValidate(request, zod4(grantQualificationSchema))
+
+		if (!form.valid) {
+			return fail(400, { grantQualForm: form })
+		}
+
+		const { qualification_id, qualification_name, awarded_date, notes } = form.data
+
+		// Fetch performer display_name for service record payload
+		const { data: performer } = await supabase
+			.from('soldiers')
+			.select('display_name')
+			.eq('user_id', claims?.sub as string)
+			.maybeSingle()
+
+		const performed_by_name = performer?.display_name ?? 'Unknown'
+
+		// Insert into member_qualifications
+		const { error: qualError } = await supabase.from('member_qualifications').insert({
+			member_id: params.id,
+			qualification_id,
+			awarded_by: claims?.sub as string,
+			awarded_date,
+			notes: notes ?? null,
+		})
+
+		if (qualError) {
+			console.error('member_qualifications insert error:', qualError)
+			return message(form, 'Failed to grant qualification', { status: 500 })
+		}
+
+		// Dual-write: insert into service_records
+		const { error: srError } = await supabase.from('service_records').insert({
+			soldier_id: params.id,
+			action_type: 'qualification',
+			payload: { qualification_id, qualification_name, notes, performed_by_name },
+			performed_by: claims?.sub as string,
+			visibility: 'public',
+		})
+
+		if (srError) {
+			console.error('service_records insert error (qualification):', srError)
+			// Non-fatal: qualification already inserted, just log the error
+		}
+
+		return message(form, 'Qualification granted successfully')
+	},
+
+	grantAward: async ({ params, request, locals: { supabase, getClaims } }) => {
+		const claims = await getClaims()
+		const userRole = (claims?.['user_role'] as string) ?? null
+
+		if (!hasRole(userRole, 'command')) {
+			return fail(403, { message: 'Command or higher required' })
+		}
+
+		const form = await superValidate(request, zod4(grantAwardSchema))
+
+		if (!form.valid) {
+			return fail(400, { grantAwardForm: form })
+		}
+
+		const { award_id, award_name, awarded_date, citation } = form.data
+
+		// Fetch performer display_name for service record payload
+		const { data: performer } = await supabase
+			.from('soldiers')
+			.select('display_name')
+			.eq('user_id', claims?.sub as string)
+			.maybeSingle()
+
+		const performed_by_name = performer?.display_name ?? 'Unknown'
+
+		// Insert into member_awards
+		const { error: awardError } = await supabase.from('member_awards').insert({
+			member_id: params.id,
+			award_id,
+			awarded_by: claims?.sub as string,
+			awarded_date,
+			citation,
+		})
+
+		if (awardError) {
+			console.error('member_awards insert error:', awardError)
+			return message(form, 'Failed to grant award', { status: 500 })
+		}
+
+		// Dual-write: insert into service_records
+		const { error: srError } = await supabase.from('service_records').insert({
+			soldier_id: params.id,
+			action_type: 'award',
+			payload: { award_id, award_name, citation, performed_by_name },
+			performed_by: claims?.sub as string,
+			visibility: 'public',
+		})
+
+		if (srError) {
+			console.error('service_records insert error (award):', srError)
+			// Non-fatal: award already inserted, just log the error
+		}
+
+		return message(form, 'Award granted successfully')
+	},
 }
