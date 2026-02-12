@@ -163,9 +163,18 @@ export const load: PageServerLoad = async ({ params, locals: { supabase, getClai
 		.eq('member_id', params.id)
 		.order('awarded_date', { ascending: false })
 
-	// 10. Initialize superforms for grant forms
-	const grantQualForm = await superValidate(zod4(grantQualificationSchema))
-	const grantAwardForm = await superValidate(zod4(grantAwardSchema))
+	// 10. Initialize superforms for grant forms (default awarded_date to today)
+	const todayDate = new Date().toISOString().split('T')[0]
+	const grantQualForm = await superValidate(
+		{ awarded_date: todayDate },
+		zod4(grantQualificationSchema),
+		{ errors: false }
+	)
+	const grantAwardForm = await superValidate(
+		{ awarded_date: todayDate },
+		zod4(grantAwardSchema),
+		{ errors: false }
+	)
 
 	return {
 		soldier,

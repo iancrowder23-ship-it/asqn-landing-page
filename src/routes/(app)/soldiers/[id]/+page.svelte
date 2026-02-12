@@ -2,6 +2,11 @@
 	import StatusBadge from '$lib/components/StatusBadge.svelte'
 	import AttendanceStats from '$lib/components/AttendanceStats.svelte'
 	import ServiceRecordTimeline from '$lib/components/ServiceRecordTimeline.svelte'
+	import QualificationsList from '$lib/components/QualificationsList.svelte'
+	import AwardsList from '$lib/components/AwardsList.svelte'
+	import GrantQualForm from '$lib/components/GrantQualForm.svelte'
+	import GrantAwardForm from '$lib/components/GrantAwardForm.svelte'
+	import { hasRole } from '$lib/auth/roles'
 	import type { PageData } from './$types'
 
 	let { data }: { data: PageData } = $props()
@@ -81,6 +86,45 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Awards & Qualifications Section (full width) -->
+	<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+		<!-- Qualifications Panel -->
+		<div class="bg-night-surface border border-night-border rounded-lg p-4">
+			<h2 class="text-lg font-bold text-ranger-tan font-tactical mb-3">Qualifications</h2>
+			<QualificationsList qualifications={data.memberQualifications} />
+		</div>
+
+		<!-- Awards & Decorations Panel -->
+		<div class="bg-night-surface border border-night-border rounded-lg p-4">
+			<h2 class="text-lg font-bold text-ranger-tan font-tactical mb-3">Awards & Decorations</h2>
+			<AwardsList awards={data.memberAwards} />
+		</div>
+	</div>
+
+	<!-- Admin Actions (Grant Forms) — visible only to NCO+/Command+ -->
+	{#if hasRole(data.userRole, 'nco') || hasRole(data.userRole, 'command')}
+		<div class="border border-od-green/30 rounded-lg p-4 mb-6 bg-od-green/5">
+			<h2 class="text-sm font-bold text-od-green-light font-tactical uppercase tracking-wider mb-4">
+				Admin Actions
+			</h2>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+				{#if hasRole(data.userRole, 'nco')}
+					<div>
+						<h3 class="text-ranger-tan font-medium text-sm mb-3">Grant Qualification</h3>
+						<GrantQualForm form={data.grantQualForm} qualifications={data.qualifications} />
+					</div>
+				{/if}
+
+				{#if hasRole(data.userRole, 'command')}
+					<div>
+						<h3 class="text-ranger-tan font-medium text-sm mb-3">Grant Award</h3>
+						<GrantAwardForm form={data.grantAwardForm} awards={data.awards} />
+					</div>
+				{/if}
+			</div>
+		</div>
+	{/if}
 
 	<!-- Two-column layout for stats and record -->
 	<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
