@@ -88,12 +88,12 @@ Plans:
   3. A logged-in member can view the roster as a card grid showing rank insignia and callsign for each member
   4. A member can switch to a hierarchical tree view showing Squadron > Troop > Soldier structure
   5. A member can switch to a sortable and filterable flat table view and toggle between all three roster views without a page reload
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 04-01: Awards and qualifications granting UI — NCO+ and Command+ permission gates, service record writes
-- [ ] 04-02: Awards and qualifications display components on profile
-- [ ] 04-03: Internal roster — shared query driving card grid, hierarchical tree, and sortable table with view toggle
+- [ ] 04-01-PLAN.md — Phase 4 migration (qualifications, member_qualifications, awards, member_awards tables with RLS), seed data, type regeneration
+- [ ] 04-02-PLAN.md — Awards and qualifications granting UI (NCO+/Command+ forms) and display components on soldier profile
+- [ ] 04-03-PLAN.md — Internal roster page with card grid, hierarchical tree, and sortable table with view toggle
 
 ---
 
@@ -148,10 +148,10 @@ Note: Phases 2 and 3 can overlap after Phase 1 — public site does not depend o
 | 1. Foundation | 4/4 | Complete | 2026-02-11 |
 | 2. Public Site | 4/4 | Complete | 2026-02-11 |
 | 3. Soldier Profiles and Service Records | 2/2 | Complete | 2026-02-11 |
-| 4. Awards, Qualifications, and Roster | 0/3 | Not started | - |
+| 4. Awards, Qualifications, and Roster | 0/3 | Planned | - |
 | 5. Enlistment Pipeline and Personnel Actions | 0/4 | Not started | - |
 | 6. Events, Attendance, and Admin Dashboard | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-11 after Phase 3 execution complete*
+*Last updated: 2026-02-11 after Phase 4 planning complete*
