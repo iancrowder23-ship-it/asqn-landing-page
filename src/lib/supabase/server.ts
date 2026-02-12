@@ -1,12 +1,10 @@
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY } from '$env/static/public'
 import { createServerClient } from '@supabase/ssr'
 import type { Cookies } from '@sveltejs/kit'
+import type { Database } from '$lib/types/database'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createSupabaseServerClient(cookies: Cookies) {
-	// Temporary until plan 01-03 generates types
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	return createServerClient<any>(
+	return createServerClient<Database>(
 		PUBLIC_SUPABASE_URL,
 		PUBLIC_SUPABASE_PUBLISHABLE_KEY,
 		{
