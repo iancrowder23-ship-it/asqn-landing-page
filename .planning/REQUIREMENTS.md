@@ -123,13 +123,61 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (Updated during roadmap creation) | | |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| AUTH-04 | Phase 1 | Pending |
+| SITE-01 | Phase 2 | Pending |
+| SITE-02 | Phase 2 | Pending |
+| SITE-03 | Phase 2 | Pending |
+| SITE-04 | Phase 2 | Pending |
+| SITE-05 | Phase 2 | Pending |
+| SITE-06 | Phase 2 | Pending |
+| SITE-07 | Phase 2 | Pending |
+| SITE-08 | Phase 2 | Pending |
+| SITE-09 | Phase 2 | Pending |
+| PROF-01 | Phase 3 | Pending |
+| PROF-02 | Phase 3 | Pending |
+| PROF-03 | Phase 3 | Pending |
+| PROF-04 | Phase 3 | Pending |
+| PROF-05 | Phase 3 | Pending |
+| SRVC-01 | Phase 3 | Pending |
+| SRVC-02 | Phase 3 | Pending |
+| SRVC-03 | Phase 3 | Pending |
+| SRVC-04 | Phase 3 | Pending |
+| SRVC-05 | Phase 3 | Pending |
+| QUAL-01 | Phase 4 | Pending |
+| QUAL-02 | Phase 4 | Pending |
+| QUAL-03 | Phase 4 | Pending |
+| QUAL-04 | Phase 4 | Pending |
+| ROST-01 | Phase 4 | Pending |
+| ROST-02 | Phase 4 | Pending |
+| ROST-03 | Phase 4 | Pending |
+| ROST-04 | Phase 4 | Pending |
+| ENLS-01 | Phase 5 | Pending |
+| ENLS-02 | Phase 5 | Pending |
+| ENLS-03 | Phase 5 | Pending |
+| ENLS-04 | Phase 5 | Pending |
+| ENLS-05 | Phase 5 | Pending |
+| PERS-01 | Phase 5 | Pending |
+| PERS-02 | Phase 5 | Pending |
+| PERS-03 | Phase 5 | Pending |
+| PERS-04 | Phase 5 | Pending |
+| PERS-05 | Phase 5 | Pending |
+| EVNT-01 | Phase 6 | Pending |
+| EVNT-02 | Phase 6 | Pending |
+| EVNT-03 | Phase 6 | Pending |
+| EVNT-04 | Phase 6 | Pending |
+| EVNT-05 | Phase 6 | Pending |
+| ADMN-01 | Phase 6 | Pending |
+| ADMN-02 | Phase 6 | Pending |
+| ADMN-03 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 40 total
-- Mapped to phases: 0
-- Unmapped: 40
+- Mapped to phases: 40
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-10*
-*Last updated: 2026-02-10 after initial definition*
+*Last updated: 2026-02-10 after roadmap creation — traceability complete*
