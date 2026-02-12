@@ -30,13 +30,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Refreshing the browser after login keeps the session active without re-prompting
   3. A member with the Member role cannot access pages or query data designated Admin-only, even by calling Supabase directly with the anon key
   4. The Custom Access Token Hook injects the user's role into the JWT so RLS policies evaluate role without an additional database query
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 01-01: Project scaffolding — SvelteKit, Supabase project, Docker, Tailwind v4
-- [ ] 01-02: Discord OAuth and session management via hooks.server.ts
-- [ ] 01-03: Database schema — soldiers, ranks, units, service_records, user_roles tables with RLS enabled
-- [ ] 01-04: Custom Access Token Hook — role injection into JWT, 4-tier hierarchy constants and middleware helpers
+- [ ] 01-01-PLAN.md — SvelteKit + Tailwind v4 + adapter-node scaffolding and Docker infrastructure
+- [ ] 01-02-PLAN.md — Discord OAuth, hooks.server.ts session management, auth-gated route group
+- [ ] 01-03-PLAN.md — Database schema (soldiers, ranks, units, service_records, user_roles) with RLS and baseline policies
+- [ ] 01-04-PLAN.md — Custom Access Token Hook, role TypeScript helpers, end-to-end auth verification
 
 ---
 
@@ -155,4 +155,4 @@ Note: Phases 2 and 3 can overlap after Phase 1 — public site does not depend o
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-10 after initial creation*
+*Last updated: 2026-02-11 after Phase 1 planning*
