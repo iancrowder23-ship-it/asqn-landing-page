@@ -18,6 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Awards, Qualifications, and Roster** — Award and qualification granting, profile display, internal roster in card/tree/table views
 - [x] **Phase 5: Enlistment Pipeline and Personnel Actions** — Enlistment review queue with state machine, soldier auto-creation on acceptance, promotions, transfers, status changes, notes
 - [x] **Phase 6: Events, Attendance, and Admin Dashboard** — Event creation and management, attendance recording, service record linkage, admin metrics dashboard
+- [ ] **Phase 7: Gap Closure — Logout, Public Events, Assignment History** — Audit-identified fixes: logout route, public events page, transfer history key mismatch
 
 ## Phase Details
 
@@ -136,10 +137,23 @@ Plans:
 
 ---
 
+### Phase 7: Gap Closure — Logout, Public Events, Assignment History
+**Goal**: All audit-identified gaps are closed: users can sign out, visitors can browse public events without login, and assignment history displays correctly on soldier profiles
+**Depends on**: Phase 6
+**Requirements**: SITE-08 (fix), AUTH-01 (logout lifecycle)
+**Gap Closure**: Closes gaps from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. A logged-in user can click Logout and be signed out — session is destroyed and user is redirected to the public landing page
+  2. An unauthenticated visitor can navigate to the public events page from the site nav and see upcoming events without being redirected to login
+  3. A member viewing a soldier's profile sees correct unit names in assignment history (not `— → —`) after a transfer action
+**Plans**: TBD
+
+---
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 Note: Phases 2 and 3 can overlap after Phase 1 — public site does not depend on personnel data.
 
@@ -151,7 +165,8 @@ Note: Phases 2 and 3 can overlap after Phase 1 — public site does not depend o
 | 4. Awards, Qualifications, and Roster | 3/3 | Complete | 2026-02-11 |
 | 5. Enlistment Pipeline and Personnel Actions | 3/3 | Complete | 2026-02-11 |
 | 6. Events, Attendance, and Admin Dashboard | 4/4 | Complete | 2026-02-11 |
+| 7. Gap Closure | 0/TBD | Planned | — |
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-11 after Phase 6 execution complete*
+*Last updated: 2026-02-11 after gap closure phases added from v1.0 audit*
