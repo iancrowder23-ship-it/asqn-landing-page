@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
-**Current focus:** Phase 6 (Events, Attendance, Admin Dashboard) — Plan 1 of 4 complete
+**Current focus:** Phase 6 (Events, Attendance, Admin Dashboard) — Plan 2 of 4 complete
 
 ## Current Position
 
 Phase: 6 of 6 IN PROGRESS (Events, Attendance, Admin Dashboard)
-Plan: 1 of 4 complete
-Status: Phase 6 Wave 1 complete — Wave 2 (plans 02, 03, 04) ready to execute in parallel
-Last activity: 2026-02-12 — Phase 6 Plan 1 executed (foundation: RLS migration, Zod schemas, date utility, nav)
+Plan: 2 of 4 complete
+Status: Phase 6 Plan 2 complete — events CRUD (list/create/edit) delivered; plans 03, 04 remain
+Last activity: 2026-02-12 — Phase 6 Plan 2 executed (events list, create, edit/cancel pages; (site)/events route conflict resolved)
 
-Progress: [█████████░] 85%
+Progress: [█████████░] 88%
 
 ## Performance Metrics
 
@@ -90,6 +90,9 @@ Recent decisions affecting current work:
 - [Phase 06-events-attendance-and-admin-dashboard P01]: recordAttendanceSchema is per-row (not bulk array) — simpler for small milsim rosters, per phase research recommendation
 - [Phase 06-events-attendance-and-admin-dashboard P01]: formatDate uses em-dash (U+2014) separator matching existing (site)/events implementation for consistency
 - [Phase 06-events-attendance-and-admin-dashboard P01]: Supabase migration repair command resolves history drift when migration was applied but not recorded
+- [Phase 06-events-attendance-and-admin-dashboard P02]: (app)/events replaces (site)/events — route group conflict resolved by removing public route, same pattern as Phase 4 roster
+- [Phase 06-events-attendance-and-admin-dashboard P02]: datetime-local pre-fill uses new Date(event_date).toISOString().slice(0, 16) to convert ISO timestamptz to YYYY-MM-DDTHH:MM
+- [Phase 06-events-attendance-and-admin-dashboard P02]: Events list shows ALL statuses (no filter) — authenticated internal view vs. public site upcoming-only filter
 
 ### Pending Todos
 
@@ -105,6 +108,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 06-01-PLAN.md — Phase 6 foundation (RLS, Zod schemas, formatDate, nav links)
+Stopped at: Completed 06-02-PLAN.md — events list/create/edit/cancel pages
 Resume file: None
-Next action: Execute Phase 6 Wave 2 plans (06-02, 06-03, 06-04) — can run in parallel
+Next action: Execute Phase 6 plans 06-03 (operations+attendance) and 06-04 (admin dashboard) — can run in parallel
