@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
-**Current focus:** Phase 6 (Events, Attendance, Admin Dashboard) — Plan 4 of 4 complete (pending plan 03)
+**Current focus:** Phase 6 (Events, Attendance, Admin Dashboard) — ALL 4 PLANS COMPLETE
 
 ## Current Position
 
-Phase: 6 of 6 IN PROGRESS (Events, Attendance, Admin Dashboard)
-Plan: 4 of 4 complete (plan 03 may still be executing in parallel)
-Status: Phase 6 Plan 4 complete — admin dashboard delivered; awaiting plan 03 (operations+attendance) to complete Phase 6
-Last activity: 2026-02-12 — Phase 6 Plan 4 executed (admin dashboard: parallel metrics, unit readiness, attendance trends, actions feed)
+Phase: 6 of 6 COMPLETE (Events, Attendance, Admin Dashboard)
+Plan: 4 of 4 complete
+Status: Phase 6 fully complete — all 4 plans executed (foundation, events management, operations+attendance, admin dashboard)
+Last activity: 2026-02-12 — Phase 6 Plan 3 executed (operations list, create operation, operation detail with per-row attendance recording)
 
-Progress: [█████████░] 97%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -96,6 +96,9 @@ Recent decisions affecting current work:
 - [Phase 06-events-attendance-and-admin-dashboard P04]: Dashboard metrics gating uses data.metrics null-check in template (not hasRole) — server controls what data is sent, template just conditionally renders
 - [Phase 06-events-attendance-and-admin-dashboard P04]: Attendance trends computed in-memory by grouping all operation_attendance rows into Map<op_id, counts> — avoids N+1 queries
 - [Phase 06-events-attendance-and-admin-dashboard P04]: Unit readiness bar widths use inline style (not Tailwind classes) — Tailwind JIT cannot generate arbitrary percentage classes at runtime
+- [Phase 06-events-attendance-and-admin-dashboard P03]: Per-row forms use plain use:enhance from $app/forms (not superforms) — each soldier row is its own <form> element; server still uses superValidate for validation
+- [Phase 06-events-attendance-and-admin-dashboard P03]: Form-as-div-row layout — form wraps CSS grid div row (not table tr) because Svelte enforces form cannot be child of tr (node_invalid_placement error)
+- [Phase 06-events-attendance-and-admin-dashboard P03]: existingAttendance map built server-side as Record<soldier_id, {status, role_held, notes}> for O(1) lookup in per-row form template
 
 ### Pending Todos
 
@@ -111,6 +114,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 06-04-PLAN.md — admin dashboard with parallel metrics, unit readiness bar, attendance trends, personnel actions feed
+Stopped at: Completed 06-03-PLAN.md — operations list, create operation form, operation detail with per-row attendance recording (upsert)
 Resume file: None
-Next action: Verify plan 06-03 (operations+attendance) complete; if so, Phase 6 is done and project is complete
+Next action: Phase 6 complete — all 6 phases done. Project is complete. Deploy or verify end-to-end.
