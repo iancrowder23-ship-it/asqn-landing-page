@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-10)
 ## Current Position
 
 Phase: 1 of 6 (Foundation)
-Plan: 2 of 4 in current phase
-Status: Executing — plan 01-02 complete, plan 01-03 next
-Last activity: 2026-02-12 — Plan 01-02 (Discord OAuth auth) complete
+Plan: 3 of 4 in current phase
+Status: Executing — plan 01-03 complete, plan 01-04 next
+Last activity: 2026-02-12 — Plan 01-03 (database schema + RLS + typed Database) complete
 
-Progress: [██░░░░░░░░] 8%
+Progress: [███░░░░░░░] 12%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 2.5 min
-- Total execution time: 5 min
+- Total plans completed: 3
+- Average duration: 6.3 min
+- Total execution time: 20 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 2/4 | 5 min | 2.5 min |
+| 01-foundation | 3/4 | 20 min | 6.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min, 2 min
-- Trend: -
+- Last 5 plans: 3 min, 2 min, 15 min
+- Trend: plan 01-03 was longer due to schema conflict resolution
 
 *Updated after each plan completion*
 
@@ -52,7 +52,10 @@ Recent decisions affecting current work:
 - NPM_CONFIG_PREFIX workaround: NPM_CONFIG_PREFIX=/nonexistent in shell env — all npm/npx commands require env -u NPM_CONFIG_PREFIX prefix
 - getClaims() pattern: auth.getClaims() used directly — available in @supabase/supabase-js v2.95.3, no manual JWT decode needed
 - Cookie path '/': enforced in setAll handler in createSupabaseServerClient — required for cross-route persistence
-- createSupabaseServerClient uses `any` generic temporarily — plan 01-03 will replace with typed Database
+- Database typed: createServerClient<Database> and createBrowserClient<Database> — any workaround removed in plan 01-03
+- Schema migration: prior asqn-project-1 schema dropped via CASCADE — user approved Option A (drop and migrate fresh)
+- Supabase CLI auth: SUPABASE_ACCESS_TOKEN extracted from ~/.claude/.credentials.json mcpOAuth entry (sbp_oauth_ token)
+- RLS append-only: service_records has no UPDATE/DELETE policies — absence of policy = deny in RLS
 
 ### Pending Todos
 
@@ -63,10 +66,11 @@ None yet.
 - Phase 4 (Enlistment State Machine): DB-level transition enforcement approach (trigger vs. check constraint vs. RPC) needs a concrete decision during planning — research flag from SUMMARY.md
 - Phase 5 (Promotion Workflow): Admin notification strategy (Supabase Realtime vs. polling vs. webhooks) needs a decision during planning
 - **All subsequent plans**: `NPM_CONFIG_PREFIX=/nonexistent` is set in shell environment — all npm/npx commands must use `env -u NPM_CONFIG_PREFIX` prefix
+- **plan 01-04**: Supabase access token may expire — if CLI auth fails, re-extract from ~/.claude/.credentials.json mcpOAuth entry
 
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Plan 01-02 complete — Discord OAuth auth with getClaims(), session cookies, and /(app) route guard
+Stopped at: Plan 01-03 complete — 5-table schema with RLS, baseline policies, typed database.ts generated
 Resume file: None
-Next action: Execute plan 01-03 (database schema + typed database.ts generation)
+Next action: Execute plan 01-04 (Custom Access Token Hook — injects user_role into JWT)
