@@ -123,10 +123,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 1 | Pending |
-| AUTH-02 | Phase 1 | Pending |
-| AUTH-03 | Phase 1 | Pending |
-| AUTH-04 | Phase 1 | Pending |
+| AUTH-01 | Phase 1 | ✓ Done |
+| AUTH-02 | Phase 1 | ✓ Done |
+| AUTH-03 | Phase 1 | ✓ Done |
+| AUTH-04 | Phase 1 | ✓ Done |
 | SITE-01 | Phase 2 | Pending |
 | SITE-02 | Phase 2 | Pending |
 | SITE-03 | Phase 2 | Pending |

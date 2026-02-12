@@ -12,7 +12,7 @@ Build order is dictated by hard dependencies: auth and schema must be locked bef
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** — Discord OAuth, 4-tier RBAC, database schema with RLS, append-only service record model
+- [x] **Phase 1: Foundation** — Discord OAuth, 4-tier RBAC, database schema with RLS, append-only service record model
 - [ ] **Phase 2: Public Site** — Landing, about, ORBAT, rank chart, leadership, events list, enlistment form, partial roster, contact
 - [ ] **Phase 3: Soldier Profiles and Service Records** — Member profile pages, rank/insignia display, service record timeline, attendance stats, assignment history, combat record
 - [ ] **Phase 4: Awards, Qualifications, and Roster** — Award and qualification granting, profile display, internal roster in card/tree/table views
@@ -146,7 +146,7 @@ Note: Phases 2 and 3 can overlap after Phase 1 — public site does not depend o
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/4 | Not started | - |
+| 1. Foundation | 4/4 | ✓ Complete | 2026-02-11 |
 | 2. Public Site | 0/4 | Not started | - |
 | 3. Soldier Profiles and Service Records | 0/3 | Not started | - |
 | 4. Awards, Qualifications, and Roster | 0/3 | Not started | - |
@@ -155,4 +155,4 @@ Note: Phases 2 and 3 can overlap after Phase 1 — public site does not depend o
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-11 after Phase 1 planning*
+*Last updated: 2026-02-11 after Phase 1 execution — verified*
