@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Awards, Qualifications, and Roster** — Award and qualification granting, profile display, internal roster in card/tree/table views
 - [x] **Phase 5: Enlistment Pipeline and Personnel Actions** — Enlistment review queue with state machine, soldier auto-creation on acceptance, promotions, transfers, status changes, notes
 - [x] **Phase 6: Events, Attendance, and Admin Dashboard** — Event creation and management, attendance recording, service record linkage, admin metrics dashboard
-- [ ] **Phase 7: Gap Closure — Logout, Public Events, Assignment History** — Audit-identified fixes: logout route, public events page, transfer history key mismatch
+- [x] **Phase 7: Gap Closure — Logout, Public Events, Assignment History** — Audit-identified fixes: logout route, public events page, transfer history key mismatch
 
 ## Phase Details
 
@@ -149,7 +149,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 07-01-PLAN.md — Logout route, public events page (site route group), assignment history key fix
+- [x] 07-01-PLAN.md — Logout route, public events page (site route group), assignment history key fix
 
 ---
 
@@ -168,8 +168,8 @@ Note: Phases 2 and 3 can overlap after Phase 1 — public site does not depend o
 | 4. Awards, Qualifications, and Roster | 3/3 | Complete | 2026-02-11 |
 | 5. Enlistment Pipeline and Personnel Actions | 3/3 | Complete | 2026-02-11 |
 | 6. Events, Attendance, and Admin Dashboard | 4/4 | Complete | 2026-02-11 |
-| 7. Gap Closure | 0/1 | Planned | — |
+| 7. Gap Closure | 1/1 | Complete | 2026-02-11 |
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-11 after gap closure phases added from v1.0 audit*
+*Last updated: 2026-02-11 — Phase 7 gap closure complete*
