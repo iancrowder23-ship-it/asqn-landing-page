@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
-**Current focus:** Phase 3 — Soldier Profiles and Service Records
+**Current focus:** Phase 3 COMPLETE — Phase 4 (Enlistment State Machine) is next
 
 ## Current Position
 
-Phase: 3 of 6 (Soldier Profiles and Service Records)
-Plan: 1 of 2 in current phase
-Status: In progress — Plan 1 complete
-Last activity: 2026-02-11 — Phase 3 Plan 1 executed: Phase 3 DB infrastructure + app shell nav
+Phase: 3 of 6 COMPLETE (Soldier Profiles and Service Records)
+Plan: 2 of 2 complete — Phase 3 fully done
+Status: Phase 3 complete — ready for Phase 4
+Last activity: 2026-02-12 — Phase 3 Plan 2 executed: soldier profile page + reusable components
 
-Progress: [███████░░░] 38%
+Progress: [████████░░] 42%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
+- Total plans completed: 9
 - Average duration: ~8 min
-- Total execution time: ~85 min
+- Total execution time: ~100 min
 
 **By Phase:**
 
@@ -29,7 +29,7 @@ Progress: [███████░░░] 38%
 |-------|-------|-------|----------|
 | 01-foundation | 4/4 | 65 min | 16.3 min |
 | 02-public-site | 4/4 | ~20 min | ~5 min |
-| 03-soldier-profiles | 1/2 | ~20 min | ~20 min |
+| 03-soldier-profiles | 2/2 | ~35 min | ~17.5 min |
 
 **Recent Trend:**
 - Phase 2 Wave 1 (02-01) executed sequentially, Wave 2 (02-02, 02-03, 02-04) parallelized across 3 agents
@@ -65,6 +65,9 @@ Recent decisions affecting current work:
 - operation_attendance references soldiers.id (not profiles.id) — correct for this system's data model
 - Authenticated can read ALL soldiers RLS policy: additive policy so profile pages work for LOA/AWOL/Discharged/Retired; anon policy still restricts public site to active-only
 - maybeSingle() for mySoldierId lookup: prevents throw when admin/new user has no soldier record
+- performed_by_name in service_records: read from payload JSON field (not performed_by UUID) — auth.users is not queryable via Supabase client
+- Assignment history derived from service_records transfer entries — no separate table needed
+- isOwnProfile computed server-side (JWT sub vs soldier.user_id) — keeps auth logic on server, avoids client-side auth check
 
 ### Pending Todos
 
@@ -79,7 +82,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-11
-Stopped at: Phase 3 Plan 1 complete — infrastructure migration + app shell nav
+Last session: 2026-02-12
+Stopped at: Phase 3 Plan 2 complete — soldier profile page + reusable components
 Resume file: None
-Next action: Execute 03-02-PLAN.md (soldier profile page)
+Next action: Plan Phase 4 (Enlistment State Machine) or execute if already planned
