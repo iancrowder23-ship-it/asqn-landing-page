@@ -33,10 +33,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 4 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — SvelteKit + Tailwind v4 + adapter-node scaffolding and Docker infrastructure
-- [ ] 01-02-PLAN.md — Discord OAuth, hooks.server.ts session management, auth-gated route group
-- [ ] 01-03-PLAN.md — Database schema (soldiers, ranks, units, service_records, user_roles) with RLS and baseline policies
-- [ ] 01-04-PLAN.md — Custom Access Token Hook, role TypeScript helpers, end-to-end auth verification
+- [x] 01-01-PLAN.md — SvelteKit + Tailwind v4 + adapter-node scaffolding and Docker infrastructure
+- [x] 01-02-PLAN.md — Discord OAuth, hooks.server.ts session management, auth-gated route group
+- [x] 01-03-PLAN.md — Database schema (soldiers, ranks, units, service_records, user_roles) with RLS and baseline policies
+- [x] 01-04-PLAN.md — Custom Access Token Hook, role TypeScript helpers, end-to-end auth verification
 
 ---
 
@@ -50,13 +50,13 @@ Plans:
   3. A visitor can submit a complete enlistment application form and receive confirmation that it was received
   4. A visitor can view a partial roster showing member names and ranks without logging in
   5. All public pages render with correct content when accessed directly by URL (SSR, not client-side-only)
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 02-01: Route group setup for public site, SSR load functions, Tailwind tactical theme
-- [ ] 02-02: Landing, About, ORBAT, Rank Chart, Leadership, Contact pages
-- [ ] 02-03: Enlistment application form with Superforms + Zod validation and anon Supabase insert
-- [ ] 02-04: Public events list and partial roster pages
+- [ ] 02-01-PLAN.md — Database migration (enlistments + events tables, anon RLS, rank seeds), dependency install, (site) route group + tactical theme, Landing/About/Contact pages
+- [ ] 02-02-PLAN.md — Rank Chart, ORBAT (recursive tree), and Leadership pages with SSR load functions
+- [ ] 02-03-PLAN.md — Enlistment application form with Superforms + Zod v4 validation and anon Supabase insert
+- [ ] 02-04-PLAN.md — Public events list and partial roster pages with SSR load functions
 
 ---
 
@@ -147,7 +147,7 @@ Note: Phases 2 and 3 can overlap after Phase 1 — public site does not depend o
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | ✓ Complete | 2026-02-11 |
-| 2. Public Site | 0/4 | Not started | - |
+| 2. Public Site | 0/4 | Planned | - |
 | 3. Soldier Profiles and Service Records | 0/3 | Not started | - |
 | 4. Awards, Qualifications, and Roster | 0/3 | Not started | - |
 | 5. Enlistment Pipeline and Personnel Actions | 0/4 | Not started | - |
@@ -155,4 +155,4 @@ Note: Phases 2 and 3 can overlap after Phase 1 — public site does not depend o
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-11 after Phase 1 execution — verified*
+*Last updated: 2026-02-11 after Phase 2 planning*
