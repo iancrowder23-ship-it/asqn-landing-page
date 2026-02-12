@@ -247,35 +247,35 @@ export type Database = {
         Row: {
           abbreviation: string | null
           award_type: string
-          created_at: string | null
+          created_at: string
           description: string | null
           id: string
           name: string
           precedence: number
           ribbon_url: string | null
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           abbreviation?: string | null
           award_type: string
-          created_at?: string | null
+          created_at?: string
           description?: string | null
           id?: string
           name: string
-          precedence: number
+          precedence?: number
           ribbon_url?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           abbreviation?: string | null
           award_type?: string
-          created_at?: string | null
+          created_at?: string
           description?: string | null
           id?: string
           name?: string
           precedence?: number
           ribbon_url?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -784,33 +784,33 @@ export type Database = {
       }
       member_awards: {
         Row: {
-          award_id: string | null
+          award_id: string
           awarded_by: string | null
           awarded_date: string
           citation: string | null
-          created_at: string | null
+          created_at: string
           id: string
-          member_id: string | null
+          member_id: string
           orders_url: string | null
         }
         Insert: {
-          award_id?: string | null
+          award_id: string
           awarded_by?: string | null
           awarded_date?: string
           citation?: string | null
-          created_at?: string | null
+          created_at?: string
           id?: string
-          member_id?: string | null
+          member_id: string
           orders_url?: string | null
         }
         Update: {
-          award_id?: string | null
+          award_id?: string
           awarded_by?: string | null
           awarded_date?: string
           citation?: string | null
-          created_at?: string | null
+          created_at?: string
           id?: string
-          member_id?: string | null
+          member_id?: string
           orders_url?: string | null
         }
         Relationships: [
@@ -822,17 +822,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "member_awards_awarded_by_fkey"
-            columns: ["awarded_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "member_awards_member_id_fkey"
             columns: ["member_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "soldiers"
             referencedColumns: ["id"]
           },
         ]
@@ -928,55 +921,48 @@ export type Database = {
         Row: {
           awarded_by: string | null
           awarded_date: string
-          created_at: string | null
+          created_at: string
           evidence_url: string | null
           expiration_date: string | null
           id: string
-          member_id: string | null
+          member_id: string
           notes: string | null
-          qualification_id: string | null
-          status: string | null
-          updated_at: string | null
+          qualification_id: string
+          status: string
+          updated_at: string
         }
         Insert: {
           awarded_by?: string | null
           awarded_date?: string
-          created_at?: string | null
+          created_at?: string
           evidence_url?: string | null
           expiration_date?: string | null
           id?: string
-          member_id?: string | null
+          member_id: string
           notes?: string | null
-          qualification_id?: string | null
-          status?: string | null
-          updated_at?: string | null
+          qualification_id: string
+          status?: string
+          updated_at?: string
         }
         Update: {
           awarded_by?: string | null
           awarded_date?: string
-          created_at?: string | null
+          created_at?: string
           evidence_url?: string | null
           expiration_date?: string | null
           id?: string
-          member_id?: string | null
+          member_id?: string
           notes?: string | null
-          qualification_id?: string | null
-          status?: string | null
-          updated_at?: string | null
+          qualification_id?: string
+          status?: string
+          updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "member_qualifications_awarded_by_fkey"
-            columns: ["awarded_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "member_qualifications_member_id_fkey"
             columns: ["member_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "soldiers"
             referencedColumns: ["id"]
           },
           {
@@ -1320,37 +1306,37 @@ export type Database = {
           abbreviation: string | null
           badge_url: string | null
           category: string | null
-          created_at: string | null
+          created_at: string
           description: string | null
           expiration_days: number | null
-          expires: boolean | null
+          expires: boolean
           id: string
           name: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           abbreviation?: string | null
           badge_url?: string | null
           category?: string | null
-          created_at?: string | null
+          created_at?: string
           description?: string | null
           expiration_days?: number | null
-          expires?: boolean | null
+          expires?: boolean
           id?: string
           name: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           abbreviation?: string | null
           badge_url?: string | null
           category?: string | null
-          created_at?: string | null
+          created_at?: string
           description?: string | null
           expiration_days?: number | null
-          expires?: boolean | null
+          expires?: boolean
           id?: string
           name?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
