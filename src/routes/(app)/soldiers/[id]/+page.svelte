@@ -1,0 +1,168 @@
+<script lang="ts">
+	import StatusBadge from '$lib/components/StatusBadge.svelte'
+	import AttendanceStats from '$lib/components/AttendanceStats.svelte'
+	import ServiceRecordTimeline from '$lib/components/ServiceRecordTimeline.svelte'
+	import type { PageData } from './$types'
+
+	let { data }: { data: PageData } = $props()
+
+	const soldier = $derived(data.soldier)
+
+	function formatDate(dateStr: string | null): string {
+		if (!dateStr) return '—'
+		return new Date(dateStr).toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric',
+		})
+	}
+</script>
+
+<svelte:head>
+	<title>{soldier.display_name} — Profile — ASQN 1st SFOD</title>
+</svelte:head>
+
+<div class="max-w-4xl mx-auto px-4 py-8">
+	<!-- Profile Header Card -->
+	<div class="bg-night-surface border border-night-border rounded-lg p-6 mb-6">
+		<div class="flex items-start gap-6">
+			<!-- Rank Insignia (left) -->
+			{#if soldier.rank?.insignia_url}
+				<img
+					src={soldier.rank.insignia_url}
+					alt="{soldier.rank.name} insignia"
+					class="w-20 h-20 object-contain shrink-0"
+				/>
+			{:else}
+				<div class="w-20 h-20 bg-night-border rounded flex items-center justify-center shrink-0">
+					<span class="text-steel text-xs font-tactical">{soldier.rank?.abbreviation ?? '—'}</span>
+				</div>
+			{/if}
+
+			<!-- Name, Rank, Status (center) -->
+			<div class="flex-1 min-w-0">
+				<div class="flex items-center gap-3 mb-1 flex-wrap">
+					<h1 class="text-2xl font-bold text-ranger-tan font-tactical">
+						{soldier.display_name}
+					</h1>
+					<StatusBadge status={soldier.status} />
+					{#if data.isOwnProfile}
+						<span class="text-od-green-light text-xs uppercase font-bold tracking-wider">Your Profile</span>
+					{/if}
+				</div>
+				<p class="text-steel text-lg">
+					{soldier.rank?.name ?? 'Unranked'}
+					{#if soldier.rank?.abbreviation}
+						<span class="text-steel/60">({soldier.rank.abbreviation})</span>
+					{/if}
+				</p>
+				{#if soldier.callsign}
+					<p class="text-steel/70 text-sm mt-1">
+						Callsign: <span class="text-ranger-tan">{soldier.callsign}</span>
+					</p>
+				{/if}
+				{#if soldier.mos}
+					<p class="text-steel/70 text-sm">
+						MOS: <span class="text-ranger-tan">{soldier.mos}</span>
+					</p>
+				{/if}
+			</div>
+		</div>
+
+		<!-- Unit Assignment + Join Date -->
+		<div class="mt-4 pt-4 border-t border-night-border flex flex-wrap gap-6 text-sm">
+			<div>
+				<span class="text-steel/50 uppercase text-xs tracking-wider block mb-0.5">Unit</span>
+				<p class="text-steel">{soldier.unit?.name ?? 'Unassigned'}</p>
+			</div>
+			<div>
+				<span class="text-steel/50 uppercase text-xs tracking-wider block mb-0.5">Joined</span>
+				<p class="text-steel">{formatDate(soldier.joined_at)}</p>
+			</div>
+		</div>
+	</div>
+
+	<!-- Two-column layout for stats and record -->
+	<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+		<!-- Left Column: Attendance Stats (1/3 width on lg) -->
+		<div class="lg:col-span-1 space-y-6">
+			<div>
+				<h2 class="text-lg font-bold text-ranger-tan font-tactical mb-3">Attendance</h2>
+				<AttendanceStats
+					operationCount={data.attendanceStats.operationCount}
+					totalOperations={data.attendanceStats.totalOperations}
+					attendancePercent={data.attendanceStats.attendancePercent}
+					lastActiveDate={data.attendanceStats.lastActiveDate}
+				/>
+			</div>
+
+			<!-- Assignment History (from transfer service records) -->
+			{#if data.assignmentHistory.length > 0}
+				<div>
+					<h2 class="text-lg font-bold text-ranger-tan font-tactical mb-3">Assignment History</h2>
+					<div class="bg-night-surface border border-night-border rounded-lg p-4 space-y-2">
+						{#each data.assignmentHistory as entry (entry.occurred_at)}
+							<div class="text-sm border-b border-night-border last:border-0 pb-2 last:pb-0">
+								<p class="text-steel">
+									{(entry.payload.from_unit as string | undefined) ?? '—'}
+									→
+									{(entry.payload.to_unit as string | undefined) ?? '—'}
+								</p>
+								<p class="text-steel/50 text-xs">{formatDate(entry.occurred_at)}</p>
+							</div>
+						{/each}
+					</div>
+				</div>
+			{/if}
+		</div>
+
+		<!-- Right Column: Service Record + Combat Record (2/3 width on lg) -->
+		<div class="lg:col-span-2 space-y-6">
+			<div>
+				<h2 class="text-lg font-bold text-ranger-tan font-tactical mb-3">Service Record</h2>
+				<div class="bg-night-surface border border-night-border rounded-lg p-4">
+					<ServiceRecordTimeline records={data.serviceRecords} />
+				</div>
+			</div>
+
+			<!-- Combat Record -->
+			{#if data.combatRecord.length > 0}
+				<div>
+					<h2 class="text-lg font-bold text-ranger-tan font-tactical mb-3">Combat Record</h2>
+					<div class="bg-night-surface border border-night-border rounded-lg p-4">
+						<table class="w-full text-left text-sm">
+							<thead>
+								<tr class="border-b border-night-border text-ranger-tan font-tactical text-xs uppercase">
+									<th class="pb-2 pr-4">Operation</th>
+									<th class="pb-2 pr-4">Type</th>
+									<th class="pb-2 pr-4">Role</th>
+									<th class="pb-2">Status</th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each data.combatRecord as entry (entry.id)}
+									<tr class="border-b border-night-border last:border-0">
+										<td class="py-2 pr-4 text-steel">{entry.operation?.title ?? 'Unknown'}</td>
+										<td class="py-2 pr-4 text-steel/70">{entry.operation?.operation_type ?? '—'}</td>
+										<td class="py-2 pr-4 text-steel">{entry.role_held ?? '—'}</td>
+										<td class="py-2">
+											<span
+												class="text-xs uppercase {entry.status === 'present'
+													? 'text-od-green-light'
+													: entry.status === 'excused'
+														? 'text-ranger-tan-muted'
+														: 'text-alert'}"
+											>
+												{entry.status}
+											</span>
+										</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			{/if}
+		</div>
+	</div>
+</div>
