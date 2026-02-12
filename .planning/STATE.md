@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
-**Current focus:** Phase 6 (Events, Attendance, Admin Dashboard) — ALL 4 PLANS COMPLETE
+**Current focus:** Phase 6 COMPLETE (verified 5/5) — All 6 phases done. Milestone v1.0 complete.
 
 ## Current Position
 
 Phase: 6 of 6 COMPLETE (Events, Attendance, Admin Dashboard)
 Plan: 4 of 4 complete
-Status: Phase 6 fully complete — all 4 plans executed (foundation, events management, operations+attendance, admin dashboard)
-Last activity: 2026-02-12 — Phase 6 Plan 3 executed (operations list, create operation, operation detail with per-row attendance recording)
+Status: Phase 6 verified and complete — 5/5 success criteria met. All 6 phases done.
+Last activity: 2026-02-11 — Phase 6 executed (4 plans, 2 waves), verified (5/5 criteria passed)
 
 Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
+- Total plans completed: 20
 - Average duration: ~12 min
 - Total execution time: ~190 min
 
@@ -41,6 +41,7 @@ Progress: [██████████] 100%
 |-------|-------|-------|----------|
 | 04-awards-qualifications-roster | 3/3 | ~35 min | ~12 min |
 | 05-enlistment-pipeline-and-personnel-actions | 3/3 | ~35 min | ~12 min |
+| 06-events-attendance-and-admin-dashboard | 4/4 | ~20 min | ~5 min |
 
 ## Accumulated Context
 
@@ -113,7 +114,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-12
-Stopped at: Completed 06-03-PLAN.md — operations list, create operation form, operation detail with per-row attendance recording (upsert)
+Last session: 2026-02-11
+Stopped at: Phase 6 verified and complete — all 6 phases done
 Resume file: None
-Next action: Phase 6 complete — all 6 phases done. Project is complete. Deploy or verify end-to-end.
+Next action: /gsd:complete-milestone — archive milestone v1.0

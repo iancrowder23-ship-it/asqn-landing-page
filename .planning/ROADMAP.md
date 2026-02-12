@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Soldier Profiles and Service Records** — Member profile pages, rank/insignia display, service record timeline, attendance stats, assignment history, combat record
 - [x] **Phase 4: Awards, Qualifications, and Roster** — Award and qualification granting, profile display, internal roster in card/tree/table views
 - [x] **Phase 5: Enlistment Pipeline and Personnel Actions** — Enlistment review queue with state machine, soldier auto-creation on acceptance, promotions, transfers, status changes, notes
-- [ ] **Phase 6: Events, Attendance, and Admin Dashboard** — Event creation and management, attendance recording, service record linkage, admin metrics dashboard
+- [x] **Phase 6: Events, Attendance, and Admin Dashboard** — Event creation and management, attendance recording, service record linkage, admin metrics dashboard
 
 ## Phase Details
 
@@ -129,10 +129,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Migration (events UPDATE RLS), Zod schemas (event/operation/attendance), formatDate utility, nav links
-- [ ] 06-02-PLAN.md — Events CRUD: list, create, edit/cancel with NCO+ gating
-- [ ] 06-03-PLAN.md — Operations CRUD and per-soldier attendance recording with upsert
-- [ ] 06-04-PLAN.md — Admin dashboard: metrics, unit readiness, attendance trends, recent actions feed
+- [x] 06-01-PLAN.md — Migration (events UPDATE RLS), Zod schemas (event/operation/attendance), formatDate utility, nav links
+- [x] 06-02-PLAN.md — Events CRUD: list, create, edit/cancel with NCO+ gating
+- [x] 06-03-PLAN.md — Operations CRUD and per-soldier attendance recording with upsert
+- [x] 06-04-PLAN.md — Admin dashboard: metrics, unit readiness, attendance trends, recent actions feed
 
 ---
 
@@ -150,8 +150,8 @@ Note: Phases 2 and 3 can overlap after Phase 1 — public site does not depend o
 | 3. Soldier Profiles and Service Records | 2/2 | Complete | 2026-02-11 |
 | 4. Awards, Qualifications, and Roster | 3/3 | Complete | 2026-02-11 |
 | 5. Enlistment Pipeline and Personnel Actions | 3/3 | Complete | 2026-02-11 |
-| 6. Events, Attendance, and Admin Dashboard | 0/4 | Planned | - |
+| 6. Events, Attendance, and Admin Dashboard | 4/4 | Complete | 2026-02-11 |
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-11 after Phase 6 planning complete*
+*Last updated: 2026-02-11 after Phase 6 execution complete*
