@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-10)
 ## Current Position
 
 Phase: 3 of 6 (Soldier Profiles and Service Records)
-Plan: 0 of 3 in current phase
-Status: Not started — needs planning
-Last activity: 2026-02-11 — Phase 2 executed (4 plans, 2 waves), all verification passed
+Plan: 1 of 2 in current phase
+Status: In progress — Plan 1 complete
+Last activity: 2026-02-11 — Phase 3 Plan 1 executed: Phase 3 DB infrastructure + app shell nav
 
-Progress: [██████░░░░] 33%
+Progress: [███████░░░] 38%
 
 ## Performance Metrics
 
@@ -29,6 +29,7 @@ Progress: [██████░░░░] 33%
 |-------|-------|-------|----------|
 | 01-foundation | 4/4 | 65 min | 16.3 min |
 | 02-public-site | 4/4 | ~20 min | ~5 min |
+| 03-soldier-profiles | 1/2 | ~20 min | ~20 min |
 
 **Recent Trend:**
 - Phase 2 Wave 1 (02-01) executed sequentially, Wave 2 (02-02, 02-03, 02-04) parallelized across 3 agents
@@ -60,6 +61,10 @@ Recent decisions affecting current work:
 - Custom Access Token Hook: registered in Supabase Dashboard (not via SQL) — injects user_role into every JWT at login/refresh
 - Discord provider manual enable: Discord OAuth must be explicitly enabled in Supabase Dashboard > Authentication > Providers
 - user_roles locked to auth admin only: REVOKE ALL from authenticated/anon — only supabase_auth_admin can SELECT, preventing role spoofing
+- operations table uses 'title' column (not 'name') — distinguishes from legacy schema and matches plan spec
+- operation_attendance references soldiers.id (not profiles.id) — correct for this system's data model
+- Authenticated can read ALL soldiers RLS policy: additive policy so profile pages work for LOA/AWOL/Discharged/Retired; anon policy still restricts public site to active-only
+- maybeSingle() for mySoldierId lookup: prevents throw when admin/new user has no soldier record
 
 ### Pending Todos
 
@@ -75,6 +80,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Phase 2 complete — all 4 plans executed and verified
+Stopped at: Phase 3 Plan 1 complete — infrastructure migration + app shell nav
 Resume file: None
-Next action: /gsd:plan-phase 3
+Next action: Execute 03-02-PLAN.md (soldier profile page)
