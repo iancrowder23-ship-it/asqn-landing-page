@@ -76,6 +76,8 @@ Recent decisions affecting current work:
 - [Phase 04-awards-qualifications-roster]: RosterTreeNode is a new component (not reusing OrbatNode): needs soldier IDs and profile links that OrbatNode lacks
 - [Phase 04-awards-qualifications-roster]: Drop legacy tables before CREATE: legacy stubs had wrong profiles FK — dropped and recreated with correct soldiers FK
 - [Phase 04-awards-qualifications-roster]: Supabase OAuth token refresh pattern: POST api.supabase.com/v1/oauth/token with refresh_token grant revives expired sbp_oauth_ tokens
+- [Phase 04-awards-qualifications-roster]: superValidate initial data for default date values — avoids Svelte5 duplicate attribute error from bind:value + value on same input; set defaults server-side via superValidate({ awarded_date: todayDate }, ...)
+- [Phase 04-awards-qualifications-roster]: Dual-write service_records failure is non-fatal — member table insert is primary; SR insert failure logged but does not roll back the grant
 
 ### Pending Todos
 
@@ -91,6 +93,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 04-awards-qualifications-roster plan 01 (Phase 4 migration: awards/qualifications schema + TypeScript types)
+Stopped at: Completed 04-awards-qualifications-roster plan 02 (awards/qualifications granting UI + display components on soldier profile)
 Resume file: None
-Next action: Phase 4 complete — ready for Phase 5 planning
+Next action: Phase 4 fully complete (01, 02, 03 done) — ready for Phase 5 planning
