@@ -1,0 +1,117 @@
+-- ============================================================
+-- Phase 1: Core Schema
+-- Decisions locked:
+--   - service_records is append-only — no UPDATE or DELETE policies will ever be created
+--   - RLS is enabled on every table at creation — no exceptions
+--   - app_role enum is the single source of truth for role hierarchy
+-- ============================================================
+
+-- ============================================================
+-- Drop conflicting tables from prior schema (asqn-project-1)
+-- User approved Option A: drop and migrate fresh (2026-02-12)
+-- CASCADE removes all dependent tables and constraints
+-- ============================================================
+drop table if exists public.roles cascade;
+drop table if exists public.ranks cascade;
+drop table if exists public.units cascade;
+drop type if exists public.app_role cascade;
+
+-- 4-tier role hierarchy enum — matches TypeScript APP_ROLES constant
+create type public.app_role as enum ('admin', 'command', 'nco', 'member');
+
+-- ============================================================
+-- ranks: reference table — rank definitions for display and sort
+-- ============================================================
+create table public.ranks (
+  id            uuid primary key default gen_random_uuid(),
+  name          text not null unique,          -- e.g. "Staff Sergeant"
+  abbreviation  text not null,                 -- e.g. "SSG"
+  sort_order    int not null,                  -- lower = lower rank (E-5 < E-7)
+  insignia_url  text,                          -- Supabase Storage URL, nullable until images uploaded
+  created_at    timestamptz not null default now()
+);
+alter table public.ranks enable row level security;
+
+-- ============================================================
+-- units: self-referential tree for ORBAT (Squadron > Troop > Team)
+-- ============================================================
+create table public.units (
+  id              uuid primary key default gen_random_uuid(),
+  name            text not null,
+  abbreviation    text,
+  parent_unit_id  uuid references public.units(id) on delete set null,
+  created_at      timestamptz not null default now()
+);
+alter table public.units enable row level security;
+
+-- ============================================================
+-- soldiers: primary personnel record
+-- ============================================================
+create table public.soldiers (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid references auth.users(id) on delete set null unique,
+  discord_id    text unique,                   -- Discord snowflake ID — separate from internal UUID
+  display_name  text not null,
+  callsign      text,
+  mos           text,                          -- e.g. '18B', 'Rifleman'
+  status        text not null default 'active'
+                  check (status in ('active', 'inactive', 'loa', 'awol', 'discharged')),
+  rank_id       uuid references public.ranks(id) on delete set null,
+  unit_id       uuid references public.units(id) on delete set null,
+  joined_at     timestamptz not null default now(),
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+alter table public.soldiers enable row level security;
+
+-- ============================================================
+-- service_records: append-only event log
+-- INVARIANT: No UPDATE or DELETE policies will ever be created on this table.
+-- Enforcing append-only at the DB layer: RLS simply omits UPDATE/DELETE policies.
+-- When RLS is enabled and no policy exists for an operation, that operation is denied.
+-- ============================================================
+create table public.service_records (
+  id            uuid primary key default gen_random_uuid(),
+  soldier_id    uuid not null references public.soldiers(id) on delete cascade,
+  action_type   text not null
+                  check (action_type in (
+                    'rank_change', 'award', 'qualification',
+                    'transfer', 'status_change', 'enlistment', 'note'
+                  )),
+  payload       jsonb not null default '{}',   -- flexible per action_type
+  performed_by  uuid references auth.users(id) on delete set null,
+  visibility    text not null default 'public'
+                  check (visibility in ('public', 'leadership_only')),
+  occurred_at   timestamptz not null default now()
+  -- NOTE: no updated_at — this table is append-only by design
+);
+alter table public.service_records enable row level security;
+
+-- ============================================================
+-- user_roles: drives the Custom Access Token Hook (plan 01-04)
+-- Permissions on this table are tightly controlled — only supabase_auth_admin
+-- reads it during JWT issuance. Authenticated users cannot read or write their own row.
+-- ============================================================
+create table public.user_roles (
+  id        bigint generated by default as identity primary key,
+  user_id   uuid references auth.users(id) on delete cascade not null,
+  role      public.app_role not null,
+  unique (user_id, role),
+  created_at timestamptz not null default now()
+);
+alter table public.user_roles enable row level security;
+
+-- updated_at trigger for soldiers table
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+create trigger soldiers_updated_at
+  before update on public.soldiers
+  for each row execute function public.set_updated_at();
