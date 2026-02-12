@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
-**Current focus:** Phase 5 IN PROGRESS — Plan 1/3 complete (foundation: migration + state machine + schemas)
+**Current focus:** Phase 5 IN PROGRESS — Plan 2/3 complete (enlistment review queue + pipeline UI)
 
 ## Current Position
 
 Phase: 5 of 6 IN PROGRESS (Enlistment Pipeline and Personnel Actions)
-Plan: 1 of 3 complete — Phase 5 Plan 1 done
-Status: Phase 5 Plan 1 complete — Plans 05-02 and 05-03 ready to execute
-Last activity: 2026-02-12 — Phase 5 Plan 1 executed (2 tasks: migration, schemas)
+Plan: 2 of 3 complete — Phase 5 Plan 2 done
+Status: Phase 5 Plan 2 complete — Plan 05-03 ready to execute
+Last activity: 2026-02-12 — Phase 5 Plan 2 executed (2 tasks: enlistment queue + pipeline UI)
 
-Progress: [████████░░] 72%
+Progress: [████████░░] 78%
 
 ## Performance Metrics
 
@@ -41,6 +41,7 @@ Progress: [████████░░] 72%
 |-------|-------|-------|----------|
 | 04-awards-qualifications-roster | 3/3 | ~35 min | ~12 min |
 | Phase 05-enlistment-pipeline-and-personnel-actions P01 | 15 | 2 tasks | 9 files |
+| Phase 05-enlistment-pipeline-and-personnel-actions P02 | 2 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,9 @@ Recent decisions affecting current work:
 - [Phase 04-awards-qualifications-roster]: Dual-write service_records failure is non-fatal — member table insert is primary; SR insert failure logged but does not roll back the grant
 - [Phase 05-enlistment-pipeline-and-personnel-actions]: Enlistment state machine uses empty arrays for terminal states (accepted/rejected) rather than undefined for safer iteration
 - [Phase 05-enlistment-pipeline-and-personnel-actions]: SOLDIER_STATUSES exported from statusChangeAction.ts as const array — reusable by UI components for status display
+- [Phase 05-enlistment-pipeline-and-personnel-actions P02]: Idempotency via soldier_id on enlistments — acceptApplication checks soldier_id before creating soldier, safe to retry without duplicates
+- [Phase 05-enlistment-pipeline-and-personnel-actions P02]: discord_username on enlistment is a display string, NOT a Discord snowflake — never set discord_id on new soldier from enlistment data
+- [Phase 05-enlistment-pipeline-and-personnel-actions P02]: State transitions always re-fetch current DB status in action handler — never trust client-provided current status
 
 ### Pending Todos
 
@@ -96,6 +100,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 05-01-PLAN.md — Phase 5 Plan 1: DB migration + enlistment state machine + 6 Zod schemas
+Stopped at: Completed 05-02-PLAN.md — Phase 5 Plan 2: enlistment review queue + detail page + nav link
 Resume file: None
-Next action: Execute 05-02-PLAN.md and 05-03-PLAN.md (can run in parallel)
+Next action: Execute 05-03-PLAN.md (personnel actions: promotion, status change, transfer, notes)
