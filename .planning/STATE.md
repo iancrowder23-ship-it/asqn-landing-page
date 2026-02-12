@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
-**Current focus:** Phase 4 COMPLETE (verified) — Phase 5 (Enlistment Pipeline and Personnel Actions) is next
+**Current focus:** Phase 5 IN PROGRESS — Plan 1/3 complete (foundation: migration + state machine + schemas)
 
 ## Current Position
 
-Phase: 4 of 6 COMPLETE (Awards, Qualifications, and Roster)
-Plan: 3 of 3 complete — Phase 4 verified and done
-Status: Phase 4 verified and complete — ready for Phase 5
-Last activity: 2026-02-11 — Phase 4 executed (3 plans, 2 waves), verified (5/5 criteria passed)
+Phase: 5 of 6 IN PROGRESS (Enlistment Pipeline and Personnel Actions)
+Plan: 1 of 3 complete — Phase 5 Plan 1 done
+Status: Phase 5 Plan 1 complete — Plans 05-02 and 05-03 ready to execute
+Last activity: 2026-02-12 — Phase 5 Plan 1 executed (2 tasks: migration, schemas)
 
-Progress: [███████░░░] 66%
+Progress: [████████░░] 72%
 
 ## Performance Metrics
 
@@ -40,6 +40,7 @@ Progress: [███████░░░] 66%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 04-awards-qualifications-roster | 3/3 | ~35 min | ~12 min |
+| Phase 05-enlistment-pipeline-and-personnel-actions P01 | 15 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,8 @@ Recent decisions affecting current work:
 - [Phase 04-awards-qualifications-roster]: Supabase OAuth token refresh pattern: POST api.supabase.com/v1/oauth/token with refresh_token grant revives expired sbp_oauth_ tokens
 - [Phase 04-awards-qualifications-roster]: superValidate initial data for default date values — avoids Svelte5 duplicate attribute error from bind:value + value on same input; set defaults server-side via superValidate({ awarded_date: todayDate }, ...)
 - [Phase 04-awards-qualifications-roster]: Dual-write service_records failure is non-fatal — member table insert is primary; SR insert failure logged but does not roll back the grant
+- [Phase 05-enlistment-pipeline-and-personnel-actions]: Enlistment state machine uses empty arrays for terminal states (accepted/rejected) rather than undefined for safer iteration
+- [Phase 05-enlistment-pipeline-and-personnel-actions]: SOLDIER_STATUSES exported from statusChangeAction.ts as const array — reusable by UI components for status display
 
 ### Pending Todos
 
@@ -92,7 +95,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-11
-Stopped at: Phase 4 verified and complete — 5/5 success criteria met
+Last session: 2026-02-12
+Stopped at: Completed 05-01-PLAN.md — Phase 5 Plan 1: DB migration + enlistment state machine + 6 Zod schemas
 Resume file: None
-Next action: /gsd:plan-phase 5
+Next action: Execute 05-02-PLAN.md and 05-03-PLAN.md (can run in parallel)
