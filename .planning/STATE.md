@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
-**Current focus:** Phase 5 IN PROGRESS — Plan 2/3 complete (enlistment review queue + pipeline UI)
+**Current focus:** Phase 5 COMPLETE — All 3/3 plans complete (enlistment pipeline + personnel actions)
 
 ## Current Position
 
-Phase: 5 of 6 IN PROGRESS (Enlistment Pipeline and Personnel Actions)
-Plan: 2 of 3 complete — Phase 5 Plan 2 done
-Status: Phase 5 Plan 2 complete — Plan 05-03 ready to execute
-Last activity: 2026-02-12 — Phase 5 Plan 2 executed (2 tasks: enlistment queue + pipeline UI)
+Phase: 5 of 6 COMPLETE (Enlistment Pipeline and Personnel Actions)
+Plan: 3 of 3 complete — Phase 5 fully done
+Status: Phase 5 complete — Phase 6 (Operations) ready to begin
+Last activity: 2026-02-12 — Phase 5 Plan 3 executed (2 tasks: personnel action actions + UI panels)
 
-Progress: [████████░░] 78%
+Progress: [█████████░] 83%
 
 ## Performance Metrics
 
@@ -42,6 +42,7 @@ Progress: [████████░░] 78%
 | 04-awards-qualifications-roster | 3/3 | ~35 min | ~12 min |
 | Phase 05-enlistment-pipeline-and-personnel-actions P01 | 15 | 2 tasks | 9 files |
 | Phase 05-enlistment-pipeline-and-personnel-actions P02 | 2 | 2 tasks | 5 files |
+| Phase 05-enlistment-pipeline-and-personnel-actions P03 | 12 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,9 @@ Recent decisions affecting current work:
 - [Phase 05-enlistment-pipeline-and-personnel-actions P02]: Idempotency via soldier_id on enlistments — acceptApplication checks soldier_id before creating soldier, safe to retry without duplicates
 - [Phase 05-enlistment-pipeline-and-personnel-actions P02]: discord_username on enlistment is a display string, NOT a Discord snowflake — never set discord_id on new soldier from enlistment data
 - [Phase 05-enlistment-pipeline-and-personnel-actions P02]: State transitions always re-fetch current DB status in action handler — never trust client-provided current status
+- [Phase 05-enlistment-pipeline-and-personnel-actions P03]: statusChange action checks hasRole(userRole, 'admin') specifically — admin-exclusive even though admin outranks command
+- [Phase 05-enlistment-pipeline-and-personnel-actions P03]: addNote inserts only to service_records (no soldiers column mutation) — notes are ephemeral audit records, not persistent soldier state
+- [Phase 05-enlistment-pipeline-and-personnel-actions P03]: Null superForm pattern for non-Command users — destructure returns null for enhance/errors/message, form content guarded by data.promoteForm conditional
 
 ### Pending Todos
 
@@ -100,6 +104,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 05-02-PLAN.md — Phase 5 Plan 2: enlistment review queue + detail page + nav link
+Stopped at: Completed 05-03-PLAN.md — Phase 5 Plan 3: personnel actions (promote, transfer, statusChange, addNote)
 Resume file: None
-Next action: Execute 05-03-PLAN.md (personnel actions: promotion, status change, transfer, notes)
+Next action: Begin Phase 6 (Operations) — all Phase 5 plans complete
