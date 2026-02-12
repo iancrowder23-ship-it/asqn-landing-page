@@ -107,13 +107,12 @@ Plans:
   3. A Command-or-higher can promote or demote a soldier with a reason, and the action is logged to the service record with date and who performed it
   4. A Command-or-higher can issue a transfer order with effective date and reason, logged to assignment history
   5. An Admin can change a member's status (Active, LOA, AWOL, Discharged/Retired), and Command can add leadership-only notes visible only to NCO and above
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 05-01: Enlistment review queue — state machine with DB-level transition enforcement
-- [ ] 05-02: Application-to-soldier auto-creation flow on acceptance
-- [ ] 05-03: Personnel actions — promote/demote, transfer orders, status changes with service record writes
-- [ ] 05-04: Leadership-only notes and troop/position assignment
+- [ ] 05-01-PLAN.md — Migration (enlistments status constraint + soldier_id FK + UPDATE RLS), state machine transitions lib, all Zod schemas
+- [ ] 05-02-PLAN.md — Enlistment review queue page, application detail page with advance/accept/deny actions, nav link
+- [ ] 05-03-PLAN.md — Personnel actions on soldier profile (promote, transfer, status change, leadership note)
 
 ---
 
@@ -149,7 +148,7 @@ Note: Phases 2 and 3 can overlap after Phase 1 — public site does not depend o
 | 2. Public Site | 4/4 | Complete | 2026-02-11 |
 | 3. Soldier Profiles and Service Records | 2/2 | Complete | 2026-02-11 |
 | 4. Awards, Qualifications, and Roster | 3/3 | Complete | 2026-02-11 |
-| 5. Enlistment Pipeline and Personnel Actions | 0/4 | Not started | - |
+| 5. Enlistment Pipeline and Personnel Actions | 0/3 | Planned | - |
 | 6. Events, Attendance, and Admin Dashboard | 0/3 | Not started | - |
 
 ---
