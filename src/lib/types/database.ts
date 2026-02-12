@@ -602,6 +602,7 @@ export type Database = {
           referred_by: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          soldier_id: string | null
           status: string
           submitted_at: string
           timezone: string | null
@@ -617,6 +618,7 @@ export type Database = {
           referred_by?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          soldier_id?: string | null
           status?: string
           submitted_at?: string
           timezone?: string | null
@@ -632,12 +634,21 @@ export type Database = {
           referred_by?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          soldier_id?: string | null
           status?: string
           submitted_at?: string
           timezone?: string | null
           why_join?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "enlistments_soldier_id_fkey"
+            columns: ["soldier_id"]
+            isOneToOne: false
+            referencedRelation: "soldiers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       events: {
         Row: {
