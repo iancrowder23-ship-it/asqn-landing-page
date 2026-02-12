@@ -146,7 +146,10 @@ Plans:
   1. A logged-in user can click Logout and be signed out — session is destroyed and user is redirected to the public landing page
   2. An unauthenticated visitor can navigate to the public events page from the site nav and see upcoming events without being redirected to login
   3. A member viewing a soldier's profile sees correct unit names in assignment history (not `— → —`) after a transfer action
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 07-01-PLAN.md — Logout route, public events page (site route group), assignment history key fix
 
 ---
 
@@ -165,7 +168,7 @@ Note: Phases 2 and 3 can overlap after Phase 1 — public site does not depend o
 | 4. Awards, Qualifications, and Roster | 3/3 | Complete | 2026-02-11 |
 | 5. Enlistment Pipeline and Personnel Actions | 3/3 | Complete | 2026-02-11 |
 | 6. Events, Attendance, and Admin Dashboard | 4/4 | Complete | 2026-02-11 |
-| 7. Gap Closure | 0/TBD | Planned | — |
+| 7. Gap Closure | 0/1 | Planned | — |
 
 ---
 *Roadmap created: 2026-02-10*
