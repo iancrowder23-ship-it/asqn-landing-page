@@ -19,9 +19,9 @@ Progress: [███████░░░] 66%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
-- Average duration: ~10 min
-- Total execution time: ~120 min
+- Total plans completed: 13
+- Average duration: ~12 min
+- Total execution time: ~155 min
 
 **By Phase:**
 
@@ -39,7 +39,7 @@ Progress: [███████░░░] 66%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 04-awards-qualifications-roster P03 | 1 plan | 3 min | 3 min |
+| 04-awards-qualifications-roster | 3/3 | ~35 min | ~12 min |
 
 ## Accumulated Context
 
@@ -74,6 +74,8 @@ Recent decisions affecting current work:
 - isOwnProfile computed server-side (JWT sub vs soldier.user_id) — keeps auth logic on server, avoids client-side auth check
 - [Phase 04-awards-qualifications-roster]: Internal roster at /roster replaces public (site)/roster: auth-protected three-view roster supersedes simple public table; route group conflict resolved by removing (site)/roster
 - [Phase 04-awards-qualifications-roster]: RosterTreeNode is a new component (not reusing OrbatNode): needs soldier IDs and profile links that OrbatNode lacks
+- [Phase 04-awards-qualifications-roster]: Drop legacy tables before CREATE: legacy stubs had wrong profiles FK — dropped and recreated with correct soldiers FK
+- [Phase 04-awards-qualifications-roster]: Supabase OAuth token refresh pattern: POST api.supabase.com/v1/oauth/token with refresh_token grant revives expired sbp_oauth_ tokens
 
 ### Pending Todos
 
@@ -89,6 +91,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 04-awards-qualifications-roster plan 03 (roster page with three-view toggle)
+Stopped at: Completed 04-awards-qualifications-roster plan 01 (Phase 4 migration: awards/qualifications schema + TypeScript types)
 Resume file: None
-Next action: /gsd:plan-phase 5 (Promotion Workflow)
+Next action: Phase 4 complete — ready for Phase 5 planning
