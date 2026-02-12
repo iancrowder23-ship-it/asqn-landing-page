@@ -70,12 +70,11 @@ Plans:
   3. A member can view their own chronological service record showing promotions, awards, qualifications, and transfers in append-only order with timestamps and who performed each action
   4. A member's profile shows attendance statistics (operation count, attendance percentage, last active date)
   5. A member's profile shows their full unit assignment history and combat record (missions participated, roles held)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: Soldier profile page — rank, callsign, MOS, status, unit assignment with insignia images
-- [ ] 03-02: Service record display component — append-only chronological log, timestamps, performed-by
-- [ ] 03-03: Attendance stats and combat record display on profile
+- [ ] 03-01-PLAN.md — Database migration (operations + operation_attendance tables, retired status, RLS policies), type regeneration, (app) layout with navigation and My Profile link
+- [ ] 03-02-PLAN.md — Soldier profile page with rank/insignia, status badge, service record timeline, attendance stats, combat record, and assignment history
 
 ---
 
@@ -140,19 +139,19 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 Note: Phases 2 and 3 can overlap after Phase 1 — public site does not depend on personnel data.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 4/4 | ✓ Complete | 2026-02-11 |
-| 2. Public Site | 4/4 | ✓ Complete | 2026-02-11 |
-| 3. Soldier Profiles and Service Records | 0/3 | Not started | - |
+| 1. Foundation | 4/4 | Complete | 2026-02-11 |
+| 2. Public Site | 4/4 | Complete | 2026-02-11 |
+| 3. Soldier Profiles and Service Records | 0/2 | Planned | - |
 | 4. Awards, Qualifications, and Roster | 0/3 | Not started | - |
 | 5. Enlistment Pipeline and Personnel Actions | 0/4 | Not started | - |
 | 6. Events, Attendance, and Admin Dashboard | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-11 after Phase 2 execution complete*
+*Last updated: 2026-02-11 after Phase 3 planning complete*
