@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
-**Current focus:** Phase 6 (Events, Attendance, Admin Dashboard) — Plan 2 of 4 complete
+**Current focus:** Phase 6 (Events, Attendance, Admin Dashboard) — Plan 4 of 4 complete (pending plan 03)
 
 ## Current Position
 
 Phase: 6 of 6 IN PROGRESS (Events, Attendance, Admin Dashboard)
-Plan: 2 of 4 complete
-Status: Phase 6 Plan 2 complete — events CRUD (list/create/edit) delivered; plans 03, 04 remain
-Last activity: 2026-02-12 — Phase 6 Plan 2 executed (events list, create, edit/cancel pages; (site)/events route conflict resolved)
+Plan: 4 of 4 complete (plan 03 may still be executing in parallel)
+Status: Phase 6 Plan 4 complete — admin dashboard delivered; awaiting plan 03 (operations+attendance) to complete Phase 6
+Last activity: 2026-02-12 — Phase 6 Plan 4 executed (admin dashboard: parallel metrics, unit readiness, attendance trends, actions feed)
 
-Progress: [█████████░] 88%
+Progress: [█████████░] 97%
 
 ## Performance Metrics
 
@@ -93,6 +93,9 @@ Recent decisions affecting current work:
 - [Phase 06-events-attendance-and-admin-dashboard P02]: (app)/events replaces (site)/events — route group conflict resolved by removing public route, same pattern as Phase 4 roster
 - [Phase 06-events-attendance-and-admin-dashboard P02]: datetime-local pre-fill uses new Date(event_date).toISOString().slice(0, 16) to convert ISO timestamptz to YYYY-MM-DDTHH:MM
 - [Phase 06-events-attendance-and-admin-dashboard P02]: Events list shows ALL statuses (no filter) — authenticated internal view vs. public site upcoming-only filter
+- [Phase 06-events-attendance-and-admin-dashboard P04]: Dashboard metrics gating uses data.metrics null-check in template (not hasRole) — server controls what data is sent, template just conditionally renders
+- [Phase 06-events-attendance-and-admin-dashboard P04]: Attendance trends computed in-memory by grouping all operation_attendance rows into Map<op_id, counts> — avoids N+1 queries
+- [Phase 06-events-attendance-and-admin-dashboard P04]: Unit readiness bar widths use inline style (not Tailwind classes) — Tailwind JIT cannot generate arbitrary percentage classes at runtime
 
 ### Pending Todos
 
@@ -108,6 +111,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 06-02-PLAN.md — events list/create/edit/cancel pages
+Stopped at: Completed 06-04-PLAN.md — admin dashboard with parallel metrics, unit readiness bar, attendance trends, personnel actions feed
 Resume file: None
-Next action: Execute Phase 6 plans 06-03 (operations+attendance) and 06-04 (admin dashboard) — can run in parallel
+Next action: Verify plan 06-03 (operations+attendance) complete; if so, Phase 6 is done and project is complete
