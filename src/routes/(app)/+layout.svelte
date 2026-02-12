@@ -16,11 +16,13 @@
         <div class="flex items-center gap-4 text-sm">
           <a href="/dashboard" class="text-steel hover:text-ranger-tan transition-colors">Dashboard</a>
           <a href="/roster" class="text-steel hover:text-ranger-tan transition-colors">Roster</a>
+          <a href="/events" class="text-steel hover:text-ranger-tan transition-colors">Events</a>
           {#if data.mySoldierId}
             <a href="/soldiers/{data.mySoldierId}" class="text-steel hover:text-ranger-tan transition-colors">My Profile</a>
           {/if}
           {#if hasRole(data.userRole, 'nco')}
             <a href="/enlistments" class="text-steel hover:text-ranger-tan transition-colors">Enlistments</a>
+            <a href="/operations" class="text-steel hover:text-ranger-tan transition-colors">Operations</a>
           {/if}
         </div>
       </div>
