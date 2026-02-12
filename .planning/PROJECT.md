@@ -12,25 +12,25 @@ A soldier's complete service record — from enlistment to current status — is
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Public website with unit overview, about, leadership, events, enlistment, contact — v1.0
+- ✓ Discord OAuth authentication — v1.0
+- ✓ Soldier profiles with rank, callsign, MOS, status, unit assignment — v1.0
+- ✓ Service record tracking (promotions, awards, qualifications, assignments) — v1.0
+- ✓ Attendance tracking per event — v1.0
+- ✓ Event creation and management (operations, training, FTX) — v1.0
+- ✓ Promotion tracking (command decision, logged with date/reason) — v1.0
+- ✓ Awards and qualifications tracking (certs + courses) — v1.0
+- ✓ Notes/disciplinary records (leadership-only visibility) — v1.0
+- ✓ Role-based permissions (Admin, Command, NCO, Member) — v1.0
+- ✓ Enlistment application with review + interview workflow — v1.0
+- ✓ Roster views: card grid, hierarchical tree, sortable table — v1.0
+- ✓ Transfer orders with effective date and reason — v1.0
+- ✓ Member status tracking (Active, LOA, AWOL, Discharged/Retired) — v1.0
+- ✓ Admin dashboard with key metrics — v1.0
 
 ### Active
 
-- [ ] Public website with unit overview, about, leadership, events, enlistment, contact
-- [ ] Discord OAuth authentication
-- [ ] Soldier profiles with rank, callsign, MOS, status, unit assignment
-- [ ] Service record tracking (promotions, awards, qualifications, assignments)
-- [ ] Attendance tracking per event
-- [ ] Event creation and management (operations, training, FTX)
-- [ ] Promotion tracking (command decision, logged with date/reason)
-- [ ] Awards and qualifications tracking (certs + courses)
-- [ ] Notes/disciplinary records (leadership-only visibility)
-- [ ] Role-based permissions (Admin, Command, NCO, Member)
-- [ ] Enlistment application with review + interview workflow
-- [ ] Roster views: card grid, hierarchical tree, sortable table
-- [ ] Transfer orders with effective date and reason
-- [ ] Member status tracking (Active, LOA, AWOL, Discharged/Retired)
-- [ ] Admin dashboard with key metrics
+(None — define for next milestone via `/gsd:new-milestone`)
 
 ### Out of Scope
 
@@ -40,72 +40,58 @@ A soldier's complete service record — from enlistment to current status — is
 - Video/media hosting — link to external platforms
 - Multi-squadron support — building for Squadron A only
 - Public full roster — public sees names/ranks only, full details behind login
+- In-game stat tracking (K/D, hours) — breeds toxicity; attendance is the metric that matters
+- Forum / discussion board — Discord already handles all unit communication
+- Public leaderboards — conflicts with military culture model; awards system handles recognition
 
 ## Context
+
+**Shipped:** v1.0 MVP (2026-02-12)
+**Codebase:** 7,247 LOC (TypeScript + Svelte + CSS), 81 commits
+**Stack:** SvelteKit 2 + Svelte 5 (runes), Supabase, Tailwind v4, sveltekit-superforms + Zod v4, adapter-node
+**Deployment:** Docker on VPS (two-stage builder/runner, node:22-alpine)
 
 **Unit:** ASQN 1st SFOD, Squadron A (Delta Force milsim)
 **Game:** Arma 3
 **Size:** Small (10-30 members)
 **Communication:** Discord-centric; Discord OAuth is the login mechanism
 
-**Unit Structure:**
-- Squadron A
-  - Assault Troop 1 (direct action)
-  - Assault Troop 2 (direct action)
-  - Recce/Sniper Troop (reconnaissance/sniper operations)
+**Database:** 11 tables with full RLS, append-only service records, Custom Access Token Hook injecting roles into JWT
+**Auth:** Discord OAuth → Supabase Auth → JWT with user_role claim → RLS enforcement
 
-**Rank System:** US Army SF ranks including warrant officers (E-5 through O-6, WO1-CW5)
-
-**MOS System:** Blend of real SF MOSs (18A, 18B, 18C, 18D, 18E, 18F, 18Z) and simplified game roles (Rifleman, Medic, Engineer, Comms, etc.)
-
-**Events:** Operations (full missions with briefings), Training (drills, qualifications), FTX (extended multi-session exercises)
-
-**Enlistment Flow:** Application submitted → Leadership reviews → Discord interview → Accept/Deny
-
-**Roster Display:**
-- Card grid with rank insignia, callsign, photo
-- Hierarchical tree view (Squadron → Troop → Soldier)
-- Flat sortable/filterable table
-- Toggle between views
-- Ranks shown as full name + insignia image throughout
-
-**Soldier Profile Pages:**
-- Service record (promotion history, awards, qualifications timeline)
-- Attendance stats (op count, attendance %, last active)
-- Unit assignment history (past and current placements)
-- Combat record (missions participated, roles held per op)
-
-**Member Statuses:** Active, LOA (Leave of Absence), AWOL, Discharged/Retired
-
-**Qualifications:** Both in-game skill certifications (Marksman, CLS, JTAC, Breacher) and course completions (BCT, AIT, leadership courses)
-
-**Transfers:** Formal transfer orders with effective date and reason, logged in assignment history
-
-**Public vs Private:**
-- Public: Landing pages, leadership, events, enlistment form, partial roster (names + ranks)
-- Private: Full profiles, attendance, personnel actions, admin tools
+**Known Issues / Tech Debt:**
+- Awards reference table starts empty — admin must seed via Supabase dashboard
+- Discord invite URL placeholder in footer
+- `$derived()` vs `$derived.by()` in StatusBadge (cosmetic)
+- Discord OAuth provider + Custom Access Token Hook require manual Dashboard configuration
 
 ## Constraints
 
 - **Auth**: Discord OAuth via Supabase Auth — members already live in Discord
-- **Database**: Supabase PostgreSQL with row-level security
+- **Database**: Supabase PostgreSQL with row-level security on every table
 - **Hosting**: Docker on VPS — self-hosted, containerized deployment
-- **Frontend**: Modern JS framework (open to alternatives to Next.js), custom components from scratch (no component library)
+- **Frontend**: SvelteKit 2 + Svelte 5 (runes), custom components (no component library)
 - **Styling**: Tactical/SOF dark aesthetic — black, dark gray, muted accents, covert ops feel
-- **Data**: Starting fresh, no migration needed
+- **Data**: Fresh start for v1.0 — no migration from prior systems
 - **Storage**: Supabase Storage for rank insignia, soldier photos, unit assets
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Discord OAuth only | Unit lives on Discord, simplifies auth, one identity | — Pending |
-| Custom components (no UI library) | Full control over tactical/SOF aesthetic | — Pending |
-| Docker deployment | Reproducible, portable, standard for VPS hosting | — Pending |
-| Supabase for backend | Auth + DB + storage in one platform, RLS for permissions | — Pending |
-| Formal transfer orders | Maintains proper service record history | — Pending |
-| Command-driven promotions | Matches unit culture, no automated point systems | — Pending |
-| Partial public roster | Recruiting visibility without exposing full personnel data | — Pending |
+| Discord OAuth only | Unit lives on Discord, simplifies auth, one identity | ✓ Good — works well, single sign-on feel |
+| Custom components (no UI library) | Full control over tactical/SOF aesthetic | ✓ Good — consistent dark theme throughout |
+| Docker deployment | Reproducible, portable, standard for VPS hosting | ✓ Good — two-stage build keeps image small |
+| Supabase for backend | Auth + DB + storage in one platform, RLS for permissions | ✓ Good — RLS enforcement on all tables |
+| SvelteKit 2 + Svelte 5 (runes) | Modern, performant, good DX with SSR | ✓ Good — runes pattern clean and consistent |
+| Tailwind v4 CSS-first | No config file, no PostCSS, @import only | ✓ Good — zero-config styling |
+| Append-only service records | Immutable audit trail from day one | ✓ Good — complete history, no data loss risk |
+| Custom Access Token Hook for RBAC | Role in JWT, no extra DB query per request | ✓ Good — fast RLS evaluation |
+| Formal transfer orders | Maintains proper service record history | ✓ Good — assignment history works |
+| Command-driven promotions | Matches unit culture, no automated point systems | ✓ Good — aligns with milsim structure |
+| Partial public roster | Recruiting visibility without exposing full personnel data | ✓ Good — names + ranks only for visitors |
+| getClaims() direct usage | Available in @supabase/supabase-js v2.95.3 | ✓ Good — no manual JWT decode needed |
+| Dual-write to service_records | Personnel actions write to both entity table and SR log | ⚠️ Revisit — SR insert failure is non-fatal (logged, not rolled back) |
 
 ---
-*Last updated: 2026-02-10 after initialization*
+*Last updated: 2026-02-12 after v1.0 milestone*
