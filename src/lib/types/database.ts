@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       announcements: {
@@ -615,6 +590,87 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      enlistments: {
+        Row: {
+          age: number | null
+          arma_experience: string | null
+          discord_username: string
+          display_name: string
+          id: string
+          notes: string | null
+          referred_by: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_at: string
+          timezone: string | null
+          why_join: string
+        }
+        Insert: {
+          age?: number | null
+          arma_experience?: string | null
+          discord_username: string
+          display_name: string
+          id?: string
+          notes?: string | null
+          referred_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string
+          timezone?: string | null
+          why_join: string
+        }
+        Update: {
+          age?: number | null
+          arma_experience?: string | null
+          discord_username?: string
+          display_name?: string
+          id?: string
+          notes?: string | null
+          referred_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string
+          timezone?: string | null
+          why_join?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          event_date: string
+          event_type: string
+          id: string
+          status: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_date: string
+          event_type: string
+          id?: string
+          status?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_date?: string
+          event_type?: string
+          id?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
       }
       leave_of_absence: {
         Row: {
@@ -1563,6 +1619,7 @@ export type Database = {
       auto_complete_loa: { Args: never; Returns: undefined }
       calculate_tig: { Args: { p_member_id: string }; Returns: unknown }
       calculate_tis: { Args: { p_member_id: string }; Returns: unknown }
+      custom_access_token_hook: { Args: { event: Json }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "command" | "nco" | "member"
@@ -1691,9 +1748,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       app_role: ["admin", "command", "nco", "member"],

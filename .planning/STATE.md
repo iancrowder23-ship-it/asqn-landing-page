@@ -5,33 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
-**Current focus:** Phase 2 — Public Site
+**Current focus:** Phase 3 — Soldier Profiles and Service Records
 
 ## Current Position
 
-Phase: 2 of 6 (Public Site)
-Plan: 0 of 4 in current phase
-Status: Planned — ready to execute
-Last activity: 2026-02-11 — Phase 2 plans created (4 plans, 2 waves), plan check passed
+Phase: 3 of 6 (Soldier Profiles and Service Records)
+Plan: 0 of 3 in current phase
+Status: Not started — needs planning
+Last activity: 2026-02-11 — Phase 2 executed (4 plans, 2 waves), all verification passed
 
-Progress: [████░░░░░░] 17%
+Progress: [██████░░░░] 33%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 6.3 min
-- Total execution time: 20 min
+- Total plans completed: 8
+- Average duration: ~8 min
+- Total execution time: ~85 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 4/4 | 65 min | 16.3 min |
+| 02-public-site | 4/4 | ~20 min | ~5 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min, 2 min, 15 min, 45 min
-- Trend: plan 01-04 longer due to Dashboard setup + end-to-end human verification
+- Phase 2 Wave 1 (02-01) executed sequentially, Wave 2 (02-02, 02-03, 02-04) parallelized across 3 agents
+- Parallel execution significantly reduced wall-clock time
 
 *Updated after each plan completion*
 
@@ -74,6 +75,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Phase 2 planned — 4 plans, 2 waves, plan check passed
+Stopped at: Phase 2 complete — all 4 plans executed and verified
 Resume file: None
-Next action: /gsd:execute-phase 2
+Next action: /gsd:plan-phase 3
