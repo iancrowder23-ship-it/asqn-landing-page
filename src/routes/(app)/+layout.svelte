@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { LayoutData } from './$types'
-  import { roleLabel } from '$lib/auth/roles'
+  import { roleLabel, hasRole } from '$lib/auth/roles'
 
   let { data, children }: { data: LayoutData; children: import('svelte').Snippet } = $props()
 </script>
@@ -18,6 +18,9 @@
           <a href="/roster" class="text-steel hover:text-ranger-tan transition-colors">Roster</a>
           {#if data.mySoldierId}
             <a href="/soldiers/{data.mySoldierId}" class="text-steel hover:text-ranger-tan transition-colors">My Profile</a>
+          {/if}
+          {#if hasRole(data.userRole, 'nco')}
+            <a href="/enlistments" class="text-steel hover:text-ranger-tan transition-colors">Enlistments</a>
           {/if}
         </div>
       </div>
