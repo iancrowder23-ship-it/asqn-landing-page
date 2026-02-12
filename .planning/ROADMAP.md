@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Public Site** — Landing, about, ORBAT, rank chart, leadership, events list, enlistment form, partial roster, contact
 - [x] **Phase 3: Soldier Profiles and Service Records** — Member profile pages, rank/insignia display, service record timeline, attendance stats, assignment history, combat record
 - [x] **Phase 4: Awards, Qualifications, and Roster** — Award and qualification granting, profile display, internal roster in card/tree/table views
-- [ ] **Phase 5: Enlistment Pipeline and Personnel Actions** — Enlistment review queue with state machine, soldier auto-creation on acceptance, promotions, transfers, status changes, notes
+- [x] **Phase 5: Enlistment Pipeline and Personnel Actions** — Enlistment review queue with state machine, soldier auto-creation on acceptance, promotions, transfers, status changes, notes
 - [ ] **Phase 6: Events, Attendance, and Admin Dashboard** — Event creation and management, attendance recording, service record linkage, admin metrics dashboard
 
 ## Phase Details
@@ -110,9 +110,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Migration (enlistments status constraint + soldier_id FK + UPDATE RLS), state machine transitions lib, all Zod schemas
-- [ ] 05-02-PLAN.md — Enlistment review queue page, application detail page with advance/accept/deny actions, nav link
-- [ ] 05-03-PLAN.md — Personnel actions on soldier profile (promote, transfer, status change, leadership note)
+- [x] 05-01-PLAN.md — Migration (enlistments status constraint + soldier_id FK + UPDATE RLS), state machine transitions lib, all Zod schemas
+- [x] 05-02-PLAN.md — Enlistment review queue page, application detail page with advance/accept/deny actions, nav link
+- [x] 05-03-PLAN.md — Personnel actions on soldier profile (promote, transfer, status change, leadership note)
 
 ---
 
@@ -148,9 +148,9 @@ Note: Phases 2 and 3 can overlap after Phase 1 — public site does not depend o
 | 2. Public Site | 4/4 | Complete | 2026-02-11 |
 | 3. Soldier Profiles and Service Records | 2/2 | Complete | 2026-02-11 |
 | 4. Awards, Qualifications, and Roster | 3/3 | Complete | 2026-02-11 |
-| 5. Enlistment Pipeline and Personnel Actions | 0/3 | Planned | - |
+| 5. Enlistment Pipeline and Personnel Actions | 3/3 | Complete | 2026-02-11 |
 | 6. Events, Attendance, and Admin Dashboard | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-11 after Phase 4 execution complete*
+*Last updated: 2026-02-11 after Phase 5 execution complete*
