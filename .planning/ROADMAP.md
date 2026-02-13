@@ -26,7 +26,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 **Milestone Goal:** Push to main automatically builds, packages, and deploys the application to a production VPS with HTTPS. The pipeline is observable via Discord notifications and documented for future operators.
 
-- [ ] **Phase 8: VPS Provisioning and Production Compose** — Production server ready to receive deployments
+- [x] **Phase 8: VPS Provisioning and Production Compose** — Production server ready to receive deployments (completed 2026-02-12)
 - [ ] **Phase 9: CI/CD Pipeline** — Push to main triggers automated build, push to GHCR, and SSH deploy
 - [ ] **Phase 10: Observability and Validation** — Deploy pipeline is verified end-to-end, observable, and documented
 
@@ -50,9 +50,9 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 **Plans:** 3 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — VPS setup: DNS A record, Docker CE, UFW firewall, deploy user, SSH hardening, /opt/asqn directory
-- [ ] 08-02-PLAN.md — GitHub repo: create private repo, push full codebase with history
-- [ ] 08-03-PLAN.md — Production Compose: /health endpoint, Caddy + app on internal network, staging ACME TLS, VPS deployment
+- [x] 08-01-PLAN.md — VPS setup: DNS A record, Docker CE, UFW firewall, deploy user, SSH hardening, /opt/asqn directory
+- [x] 08-02-PLAN.md — GitHub repo: create private repo, push full codebase with history
+- [x] 08-03-PLAN.md — Production Compose: /health endpoint, Caddy + app on internal network, staging ACME TLS, VPS deployment
 
 ### Phase 9: CI/CD Pipeline
 
@@ -104,10 +104,10 @@ Plans:
 | 5. Enlistment, Personnel | v1.0 | 3/3 | Complete | 2026-02-11 |
 | 6. Events, Attendance, Dashboard | v1.0 | 4/4 | Complete | 2026-02-11 |
 | 7. Gap Closure | v1.0 | 1/1 | Complete | 2026-02-11 |
-| 8. VPS Provisioning and Production Compose | v1.1 | 0/3 | Not started | - |
+| 8. VPS Provisioning and Production Compose | v1.1 | 3/3 | Complete | 2026-02-12 |
 | 9. CI/CD Pipeline | v1.1 | 0/3 | Not started | - |
 | 10. Observability and Validation | v1.1 | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-12 — v1.1 Production Deployment roadmap added (Phases 8-10)*
+*Last updated: 2026-02-12 — Phase 8 complete*
