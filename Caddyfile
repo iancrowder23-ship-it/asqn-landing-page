@@ -1,0 +1,7 @@
+{
+    acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+asqnmilsim.us {
+    reverse_proxy app:3000
+}

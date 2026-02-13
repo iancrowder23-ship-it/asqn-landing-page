@@ -1,9 +1,35 @@
 services:
   app:
     build: .
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env
+    expose:
+      - "3000"
+    env_file: .env
     environment:
-      - ORIGIN=http://localhost:3000
+      - ORIGIN=https://asqnmilsim.us
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - internal
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - internal
+    depends_on:
+      - app
+
+networks:
+  internal:
+
+volumes:
+  caddy_data:
+  caddy_config:
