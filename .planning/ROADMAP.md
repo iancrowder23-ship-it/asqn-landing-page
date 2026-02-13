@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1-7 (shipped 2026-02-12)
-- 🚧 **v1.1 Production Deployment** — Phases 8-10 (in progress)
+- ✅ **v1.1 Production Deployment** — Phases 8-10 (shipped 2026-02-12)
 
 ## Phases
 
@@ -22,14 +22,14 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 </details>
 
-### 🚧 v1.1 Production Deployment (In Progress)
+### ✅ v1.1 Production Deployment — SHIPPED 2026-02-12
 
 **Milestone Goal:** Push to main automatically builds, packages, and deploys the application to a production VPS with HTTPS. The pipeline is observable via Discord notifications and documented for future operators.
 
 - [x] **Phase 8: VPS Provisioning and Production Compose** — Production server ready to receive deployments (completed 2026-02-12)
 - [x] **Phase 9: CI/CD Pipeline** — Push to main triggers automated build, push to GHCR, and SSH deploy (completed 2026-02-13)
 - [x] **Phase 9.1: Discord Auth Gate** — Restrict login to members of the ASQN Discord server (completed 2026-02-12)
-- [ ] **Phase 10: Observability and Validation** — Deploy pipeline is verified end-to-end, observable, and documented
+- [x] **Phase 10: Observability and Validation** — Deploy pipeline verified end-to-end, observable, and documented (completed 2026-02-12)
 
 ## Phase Details
 
@@ -101,7 +101,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 10-01-PLAN.md — Discord webhook notification on deploy success/failure, production ACME switch, end-to-end validation checklist
+- [x] 10-01-PLAN.md — Discord webhook notification on deploy success/failure, production ACME switch, end-to-end validation checklist
 
 ## Progress
 
@@ -117,8 +117,8 @@ Plans:
 | 8. VPS Provisioning and Production Compose | v1.1 | 3/3 | Complete | 2026-02-12 |
 | 9. CI/CD Pipeline | v1.1 | 3/3 | Complete | 2026-02-13 |
 | 9.1 Discord Auth Gate | v1.1 | 1/1 | Complete | 2026-02-12 |
-| 10. Observability and Validation | v1.1 | 0/1 | Not started | - |
+| 10. Observability and Validation | v1.1 | 1/1 | Complete | 2026-02-12 |
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-12 — Phase 10 planned*
+*Last updated: 2026-02-12 — v1.1 milestone complete*
