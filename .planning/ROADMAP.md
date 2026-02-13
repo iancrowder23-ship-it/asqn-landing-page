@@ -27,7 +27,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 **Milestone Goal:** Push to main automatically builds, packages, and deploys the application to a production VPS with HTTPS. The pipeline is observable via Discord notifications and documented for future operators.
 
 - [x] **Phase 8: VPS Provisioning and Production Compose** — Production server ready to receive deployments (completed 2026-02-12)
-- [ ] **Phase 9: CI/CD Pipeline** — Push to main triggers automated build, push to GHCR, and SSH deploy
+- [x] **Phase 9: CI/CD Pipeline** — Push to main triggers automated build, push to GHCR, and SSH deploy (completed 2026-02-13)
 - [ ] **Phase 9.1: Discord Auth Gate** — Restrict login to members of the ASQN Discord server (INSERTED)
 - [ ] **Phase 10: Observability and Validation** — Deploy pipeline is verified end-to-end, observable, and documented
 
@@ -73,9 +73,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 09-01-PLAN.md — GitHub Secrets: SSH credentials, GHCR PAT, PUBLIC_* build args configured on repository
-- [ ] 09-02-PLAN.md — Production compose (image: GHCR) + complete deploy.yml workflow (build + deploy jobs)
-- [ ] 09-03-PLAN.md — End-to-end pipeline trigger: push to main, verify GHCR image, verify VPS deployment
+- [x] 09-01-PLAN.md — GitHub Secrets: SSH credentials, GHCR PAT, PUBLIC_* build args configured on repository
+- [x] 09-02-PLAN.md — Production compose (image: GHCR) + complete deploy.yml workflow (build + deploy jobs)
+- [x] 09-03-PLAN.md — End-to-end pipeline trigger: push to main, verify GHCR image, verify VPS deployment
 
 ### Phase 09.1: Discord Auth Gate (INSERTED)
 
@@ -115,10 +115,10 @@ Plans:
 | 6. Events, Attendance, Dashboard | v1.0 | 4/4 | Complete | 2026-02-11 |
 | 7. Gap Closure | v1.0 | 1/1 | Complete | 2026-02-11 |
 | 8. VPS Provisioning and Production Compose | v1.1 | 3/3 | Complete | 2026-02-12 |
-| 9. CI/CD Pipeline | v1.1 | 0/3 | Not started | - |
+| 9. CI/CD Pipeline | v1.1 | 3/3 | Complete | 2026-02-13 |
 | 9.1 Discord Auth Gate | v1.1 | 0/1 | Not started | - |
 | 10. Observability and Validation | v1.1 | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-13 — Phase 9.1 planned*
+*Last updated: 2026-02-13 — Phase 9 complete*
