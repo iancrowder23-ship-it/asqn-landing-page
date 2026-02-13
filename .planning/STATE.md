@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 
 ## Current Position
 
-Phase: 8 of 10 (VPS Provisioning and Production Compose) — COMPLETE
-Plan: 3 of 3 in phase 08 — ALL COMPLETE
-Status: Phase 8 done — application live at https://asqnmilsim.us with staging TLS
-Last activity: 2026-02-13 — 08-03 complete: production stack deployed, /health confirmed returning "ok"
+Phase: 9 of 10 (CI/CD Pipeline) — IN PROGRESS
+Plan: 1 of 3 in phase 09 — 09-01 COMPLETE
+Status: Phase 9.1 in progress — 7 GitHub Secrets configured, ready for deploy workflow (09-02)
+Last activity: 2026-02-13 — 09-01 complete: all 7 GitHub Secrets set (SSH, GHCR, Supabase)
 
-Progress: [████████░░] 80% (Phase 8 complete, Phase 9 CI/CD next)
+Progress: [████████░░] 83% (Phase 9 Plan 1 complete, Plan 2 deploy workflow next)
 
 ## Performance Metrics
 
@@ -26,7 +26,7 @@ Progress: [████████░░] 80% (Phase 8 complete, Phase 9 CI/CD 
 - Timeline: 2 days (2026-02-10 → 2026-02-11)
 
 **v1.1 (in progress):**
-- Plans completed: 3 (08-01, 08-02, 08-03 — all Phase 8 plans complete)
+- Plans completed: 4 (08-01, 08-02, 08-03 — all Phase 8; 09-01 — GitHub Secrets)
 
 ## Accumulated Context
 
@@ -41,6 +41,11 @@ v1.1 decisions resolved in 08-03:
 - Caddyfile + docker-compose*.yml excluded from Docker image via .dockerignore
 - **SvelteKit `$env/static/public` vars are inlined at build time** — must be passed as Docker ARG/ENV (not just runtime env_file); wired via `docker-compose.yml build.args`
 
+v1.1 decisions resolved in 09-01:
+- GHCR_USERNAME = iancrowder23-ship-it (GitHub org/account that owns the GHCR packages)
+- GHCR_PAT is a classic PAT with read:packages only — fine-grained tokens don't support packages scope
+- SSH credentials reuse the Phase 8 asqn_deploy key pair (no new key generated)
+
 v1.1 decisions resolved in 08-02:
 - GitHub repo visibility: **private** (iancrowder23-ship-it/asqn-landing-page)
 - HTTPS remote used (gh CLI default); SSH can be added if VPS deploy key needs it
@@ -54,7 +59,11 @@ v1.1 decisions resolved in 08-01 (VPS provisioning):
 
 ### Pending Todos
 
-None.
+- Add a login button to the public home page (Phase 9 or gap closure)
+
+### Roadmap Evolution
+
+- Phase 9.1 inserted after Phase 9: Discord Auth Gate — restrict login to ASQN Discord server members only (URGENT)
 
 ### Blockers/Concerns
 
@@ -66,6 +75,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Phase 8 COMPLETE — all 3 plans done; https://asqnmilsim.us live with staging TLS
+Stopped at: Phase 9 Plan 1 COMPLETE — all 7 GitHub Secrets set on iancrowder23-ship-it/asqn-landing-page
 Resume file: None
-Next action: Execute Phase 9 (CI/CD pipeline — GitHub Actions deploy to VPS)
+Next action: Execute Phase 9 Plan 2 (deploy workflow — GitHub Actions CI/CD to VPS)
