@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 ## Current Position
 
 Phase: 8 of 10 (VPS Provisioning and Production Compose)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-02-12 — v1.1 roadmap created (Phases 8-10)
+Plan: 2 of 3 in current phase (08-02 complete, awaiting human-verify checkpoint)
+Status: In progress — checkpoint awaiting human verification
+Last activity: 2026-02-12 — 08-02 GitHub repo created and pushed (88 commits to main)
 
 Progress: [███████░░░] 70% (v1.0 complete, v1.1 starting)
 
@@ -34,8 +34,12 @@ Progress: [███████░░░] 70% (v1.0 complete, v1.1 starting)
 
 All v1.0 decisions logged in PROJECT.md Key Decisions table with outcomes.
 
-Pending v1.1 decisions (resolve before Phase 8 begins):
-- GitHub repo visibility (public vs private) — affects GHCR pull auth on VPS
+v1.1 decisions resolved in 08-02:
+- GitHub repo visibility: **private** (iancrowder23-ship-it/asqn-landing-page)
+- HTTPS remote used (gh CLI default); SSH can be added if VPS deploy key needs it
+- Main branch confirmed as default; master branch deleted
+
+Pending v1.1 decisions:
 - Deploy user strategy (new `deploy` user vs restrict existing)
 - Confirm VPS IP address for DNS A record and SSH_HOST secret
 
@@ -53,6 +57,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: v1.1 roadmap created — Phases 8-10 defined, 21/21 requirements mapped
+Stopped at: 08-02 checkpoint:human-verify — GitHub repo created, awaiting user verification
 Resume file: None
-Next action: `/gsd:plan-phase 8`
+Next action: User verifies GitHub repo, then continue 08-02 or proceed to 08-03
