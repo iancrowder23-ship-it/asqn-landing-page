@@ -131,3 +131,11 @@ Both steps completed successfully. No ongoing manual setup required.
 ---
 *Phase: 10-observability-and-validation*
 *Completed: 2026-02-12*
+
+## Self-Check: PASSED
+
+- FOUND: .planning/phases/10-observability-and-validation/10-01-SUMMARY.md
+- FOUND: .planning/STATE.md
+- FOUND: b852579 (feat: Discord notify job + production ACME + force-recreate)
+- FOUND: 2d08de5 (fix: $env/dynamic/private for SUPABASE_SERVICE_ROLE_KEY)
+- FOUND: dd65e6d (docs: SUMMARY.md + STATE.md update)
