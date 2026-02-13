@@ -69,12 +69,12 @@ Plans:
 4. `docker history --no-trunc <image>` shows no Supabase service role key or other runtime secrets in image layers
 5. A second push to main completes the build job faster than the first (layer cache active)
 
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 09-01: GitHub Secrets and repository configuration (SSH_HOST, SSH_USER, SSH_PRIVATE_KEY, PUBLIC_* vars)
-- [ ] 09-02: GitHub Actions workflow — build job (checkout, GHCR login, metadata, build+push with cache)
-- [ ] 09-03: GitHub Actions workflow — deploy job (SCP compose files, SSH pull, SSH up --no-deps app)
+- [ ] 09-01-PLAN.md — GitHub Secrets: SSH credentials, GHCR PAT, PUBLIC_* build args configured on repository
+- [ ] 09-02-PLAN.md — Production compose (image: GHCR) + complete deploy.yml workflow (build + deploy jobs)
+- [ ] 09-03-PLAN.md — End-to-end pipeline trigger: push to main, verify GHCR image, verify VPS deployment
 
 ### Phase 10: Observability and Validation
 
