@@ -39,9 +39,11 @@ v1.1 decisions resolved in 08-02:
 - HTTPS remote used (gh CLI default); SSH can be added if VPS deploy key needs it
 - Main branch confirmed as default; master branch deleted
 
-Pending v1.1 decisions:
-- Deploy user strategy (new `deploy` user vs restrict existing)
-- Confirm VPS IP address for DNS A record and SSH_HOST secret
+v1.1 decisions resolved in 08-01 (VPS provisioning):
+- VPS IP: **163.245.216.173** (DNS A record asqnmilsim.us set to this IP)
+- Deploy user strategy: **new `deploy` user** with docker group, SSH key-only via ~/.ssh/asqn_deploy (ed25519)
+- Root login disabled, password auth disabled on VPS
+- /opt/asqn owned by deploy:deploy — deployment root for all plans
 
 ### Pending Todos
 
@@ -50,13 +52,13 @@ None.
 ### Blockers/Concerns
 
 - **Shell**: `NPM_CONFIG_PREFIX=/nonexistent` — all npm/npx commands need `env -u NPM_CONFIG_PREFIX` prefix
-- VPS SSH access required before Phase 8 can execute
-- DNS propagation is longest-lead item — initiate DNS A record change as first Phase 8 action
 - Use staging ACME endpoint (`acme_ca https://acme-staging-v02.api.letsencrypt.org/directory`) throughout Phases 8-9; remove only in Phase 10 final validation to protect Let's Encrypt rate limit (5 certs/domain/week)
+- **VPS SSH**: `ssh -i ~/.ssh/asqn_deploy deploy@163.245.216.173` (key-only, root login disabled)
+- DNS propagation for asqnmilsim.us -> 163.245.216.173 in progress (initiated 2026-02-13)
 
 ## Session Continuity
 
-Last session: 2026-02-12
-Stopped at: 08-02 COMPLETE — GitHub repo verified private, full history, no .env
+Last session: 2026-02-13
+Stopped at: 08-01 COMPLETE — VPS provisioned: Docker CE, UFW, deploy user, SSH hardened, /opt/asqn, DNS set
 Resume file: None
-Next action: Execute 08-03 (VPS initial setup)
+Next action: Execute 08-03 (production docker-compose + Caddy)
