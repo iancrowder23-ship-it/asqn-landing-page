@@ -22,6 +22,9 @@
         {#each navLinks as link}
           <a href={link.href} class="text-steel hover:text-ranger-tan transition-colors text-sm uppercase tracking-wide">{link.label}</a>
         {/each}
+        <form method="POST" action="/auth/login">
+          <button type="submit" class="border border-od-green text-od-green-light hover:bg-od-green hover:text-night font-bold px-4 py-2 rounded text-sm uppercase tracking-wide transition-colors">Login</button>
+        </form>
         <a href="/enlist" class="bg-od-green hover:bg-od-green-light text-night font-bold px-4 py-2 rounded text-sm uppercase tracking-wide transition-colors">Enlist</a>
       </div>
 
@@ -47,6 +50,9 @@
         {#each navLinks as link}
           <a href={link.href} class="text-steel hover:text-ranger-tan transition-colors text-sm uppercase tracking-wide py-1" onclick={() => mobileOpen = false}>{link.label}</a>
         {/each}
+        <form method="POST" action="/auth/login">
+          <button type="submit" class="w-full border border-od-green text-od-green-light hover:bg-od-green hover:text-night font-bold px-4 py-2 rounded text-sm uppercase tracking-wide transition-colors text-center mt-2" onclick={() => mobileOpen = false}>Login</button>
+        </form>
         <a href="/enlist" class="bg-od-green hover:bg-od-green-light text-night font-bold px-4 py-2 rounded text-sm uppercase tracking-wide transition-colors text-center mt-2" onclick={() => mobileOpen = false}>Enlist</a>
       </div>
     {/if}
