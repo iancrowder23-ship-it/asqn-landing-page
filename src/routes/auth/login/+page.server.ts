@@ -7,6 +7,7 @@ export const actions: Actions = {
 			provider: 'discord',
 			options: {
 				redirectTo: `${url.origin}/auth/callback`,
+				scopes: 'guilds.members.read',
 			}
 		})
 
