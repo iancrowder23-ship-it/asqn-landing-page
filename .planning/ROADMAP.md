@@ -28,7 +28,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 - [x] **Phase 8: VPS Provisioning and Production Compose** — Production server ready to receive deployments (completed 2026-02-12)
 - [x] **Phase 9: CI/CD Pipeline** — Push to main triggers automated build, push to GHCR, and SSH deploy (completed 2026-02-13)
-- [ ] **Phase 9.1: Discord Auth Gate** — Restrict login to members of the ASQN Discord server (INSERTED)
+- [x] **Phase 9.1: Discord Auth Gate** — Restrict login to members of the ASQN Discord server (completed 2026-02-12)
 - [ ] **Phase 10: Observability and Validation** — Deploy pipeline is verified end-to-end, observable, and documented
 
 ## Phase Details
@@ -84,7 +84,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 09.1-01-PLAN.md — Add guilds.members.read scope, guild membership check in callback, admin client for user deletion, rejection page
+- [x] 09.1-01-PLAN.md — Add guilds.members.read scope, guild membership check in callback, admin client for user deletion, rejection page
 
 ### Phase 10: Observability and Validation
 
@@ -116,9 +116,9 @@ Plans:
 | 7. Gap Closure | v1.0 | 1/1 | Complete | 2026-02-11 |
 | 8. VPS Provisioning and Production Compose | v1.1 | 3/3 | Complete | 2026-02-12 |
 | 9. CI/CD Pipeline | v1.1 | 3/3 | Complete | 2026-02-13 |
-| 9.1 Discord Auth Gate | v1.1 | 0/1 | Not started | - |
+| 9.1 Discord Auth Gate | v1.1 | 1/1 | Complete | 2026-02-12 |
 | 10. Observability and Validation | v1.1 | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-13 — Phase 9 complete*
+*Last updated: 2026-02-12 — Phase 9.1 complete*

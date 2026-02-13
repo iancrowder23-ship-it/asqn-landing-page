@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
-**Current focus:** v1.1 Production Deployment — Phase 9 CI/CD Pipeline COMPLETE (09-03 verified)
+**Current focus:** v1.1 Production Deployment — Phase 9.1 Discord Auth Gate COMPLETE
 
 ## Current Position
 
-Phase: 9 of 10 (CI/CD Pipeline) — COMPLETE
-Plan: 3 of 3 in phase 09 — 09-03 COMPLETE
-Status: All Phase 9 plans complete — end-to-end pipeline validated and live
-Last activity: 2026-02-13 — 09-03 complete: pipeline retrigger + full verification (health, GHCR, no secrets)
+Phase: 9.1 of 10 (Discord Auth Gate) — COMPLETE
+Plan: 1 of 1 in phase 09.1 — 09.1-01 COMPLETE
+Status: Discord guild membership gate implemented — non-members rejected, members proceed
+Last activity: 2026-02-12 — 09.1-01 complete: admin client, guild check in callback, rejection page
 
-Progress: [█████████░] 93% (Phase 9 complete, Phase 10 production TLS next)
+Progress: [█████████░] 96% (Phase 9.1 complete, Phase 10 observability next)
 
 ## Performance Metrics
 
@@ -26,13 +26,20 @@ Progress: [█████████░] 93% (Phase 9 complete, Phase 10 produ
 - Timeline: 2 days (2026-02-10 → 2026-02-11)
 
 **v1.1 (in progress):**
-- Plans completed: 6 (08-01, 08-02, 08-03 — all Phase 8; 09-01 — GitHub Secrets; 09-02 — CI/CD workflow; 09-03 — pipeline validation)
+- Plans completed: 7 (08-01, 08-02, 08-03 — all Phase 8; 09-01 — GitHub Secrets; 09-02 — CI/CD workflow; 09-03 — pipeline validation; 09.1-01 — Discord Auth Gate)
 
 ## Accumulated Context
 
 ### Decisions
 
 All v1.0 decisions logged in PROJECT.md Key Decisions table with outcomes.
+
+v1.1 decisions resolved in 09.1-01:
+- Used Discord `/guilds/{id}/member` endpoint (single guild check, not list all guilds)
+- Guild ID `1464714214819102964` as const at top of callback file
+- `!memberRes.ok` catches all non-2xx (no special-casing 404 vs 403)
+- deleteUser wrapped in try/catch — still redirects even if delete fails (RLS protects data)
+- Admin client uses `SUPABASE_SERVICE_ROLE_KEY` (already in production .env)
 
 v1.1 decisions resolved in 08-03:
 - Staging ACME CA (`acme-staging-v02.api.letsencrypt.org`) used intentionally — production CA added in Phase 10
@@ -84,7 +91,7 @@ v1.1 decisions resolved in 08-01 (VPS provisioning):
 
 ## Session Continuity
 
-Last session: 2026-02-13
-Stopped at: Phase 9 Plan 3 COMPLETE — pipeline validated end-to-end (commit 97e8c47, run 21973748681)
+Last session: 2026-02-12
+Stopped at: Phase 9.1 Plan 1 COMPLETE — Discord auth gate implemented (commit 462b88f)
 Resume file: None
-Next action: Execute Phase 10 (production TLS — remove staging ACME CA from Caddyfile)
+Next action: Execute Phase 10 (observability — Discord webhook notifications, end-to-end validation, production TLS)
