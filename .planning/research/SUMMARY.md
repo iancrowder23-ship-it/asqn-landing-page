@@ -1,219 +1,205 @@
 # Project Research Summary
 
-**Project:** ASQN 1st SFOD — Arma 3 Delta Force Unit Website
-**Domain:** Milsim unit website with integrated PERSCOM-style personnel management system
-**Researched:** 2026-02-10
+**Project:** ASQN 1st SFOD — v1.1 CI/CD Deployment Pipeline
+**Domain:** Automated build and deploy pipeline for SvelteKit/Docker app to single Ubuntu VPS
+**Researched:** 2026-02-12
 **Confidence:** HIGH
 
 ## Executive Summary
 
-This project is a dual-purpose web application: a public-facing recruitment site with strong tactical branding, and a private personnel management portal replicating the capabilities of PERSCOM — the de facto standard for serious Arma 3 milsim units. Research across live milsim unit sites (PERSCOM.io, UNITAF, 16 Air Assault, SEAL Team 3 Milsim) confirms that units differentiate on authenticity and self-sufficiency. A custom Supabase-backed system built on SvelteKit gives ASQN 1st SFOD complete control over schema, data sovereignty, and cost — none of which a SaaS alternative like PERSCOM.io provides. The tactical aesthetic must be hand-crafted with Tailwind v4 custom utilities; no component library matches the visual language required.
+This milestone adds automated CI/CD to an existing, production-validated v1.0 SvelteKit application. The pattern is well-documented and low-risk: GitHub Actions builds a Docker image, pushes it to GHCR, and deploys to a single Interserver VPS via SSH. The recommended stack is GitHub Actions + GHCR + Caddy v2 + Docker Compose v2. Caddy replaces the need for nginx + certbot by handling TLS certificate provisioning and renewal automatically with a 3-line Caddyfile. All action versions have been verified against official GitHub release pages as of 2026-02-12.
 
-The recommended stack is SvelteKit 2 + Svelte 5 (with runes), Supabase for all backend primitives (Postgres + Auth + Storage), Tailwind CSS v4, sveltekit-superforms + Zod v4 for form handling, and adapter-node for Docker/VPS deployment. This stack is cohesive: SSR handles SEO-critical public pages, SPA-style transitions serve the member portal, Discord OAuth is a first-class Supabase auth provider, and RLS policies enforce the four-tier role hierarchy (Admin / Command / NCO / Member) at the database level without any application-layer trust. All versions have been verified against current npm releases as of February 2026.
+The recommended approach separates concerns into two phases: (1) VPS provisioning and production compose setup — Caddy, networking, secrets layout, restart policies — which must be correct before any pipeline runs; (2) the GitHub Actions workflow itself — build, push to GHCR, SCP compose files, SSH deploy. The existing `Dockerfile` is unchanged. The existing `docker-compose.yml` is modified to pull a pre-built image from GHCR, add Caddy as a sidecar, change the app's `ports:` to `expose:`, and add restart policies. The pipeline is split into two sequential jobs (build → deploy) so deploy failures do not re-trigger builds.
 
-The primary risk in this project is not feature complexity — it is security and data integrity. Three failure modes recur across milsim system implementations: RLS left disabled on tables (silent data exposure), personnel records modeled as mutable fields rather than append-only event logs (destroyed audit trails), and application-layer-only role checks (bypassable from the browser). All three are irreversible if data exists before the schema is corrected. The mitigation is strict build order: auth foundation and data model — with RLS enabled and the event-log schema committed — must be complete before any feature UI is written.
+The top risks are well-understood and preventable: the existing `ORIGIN=http://localhost:3000` in the current compose file will cause 403 errors on every SvelteKit form action in production and must be corrected to `https://asqnmilsim.us` before first deploy. Docker bypasses UFW firewall rules — port 3000 must be withheld from the host network entirely, accessible only to Caddy via the internal Docker network. SvelteKit's `$env/static/public` variables must be passed as Docker build args or they resolve to empty strings at build time and produce a broken Supabase client with no error during the build. All three are Phase 1/2 concerns that the build order addresses sequentially.
+
+---
 
 ## Key Findings
 
 ### Recommended Stack
 
-SvelteKit 2 with Svelte 5 runes is the correct choice for this workload. Compile-time reactivity produces 50% smaller bundles than React, which matters for a media-rich tactical site. SSR via `+page.server.ts` load functions handles SEO for recruitment pages; SvelteKit form actions with Superforms handle all authenticated mutations with progressive enhancement and field-level Zod validation. Supabase's single JS SDK covers all backend needs — PostgreSQL queries, Discord OAuth, file storage for award images, and realtime subscriptions for live roster updates. The `@supabase/ssr` package (not the deprecated `auth-helpers`) manages cookie-based session hydration in `hooks.server.ts` so RLS fires correctly on server-rendered pages.
+The existing stack (SvelteKit 2 + Svelte 5, adapter-node, Docker multi-stage build) requires no changes. CI/CD adds four components: GitHub Actions as the pipeline runner (native to the repo, free tier sufficient for a milsim unit), GHCR as the image registry (authenticates with the built-in `GITHUB_TOKEN` for the build step — no separate credentials), Caddy v2 as the reverse proxy (auto-provisions and renews Let's Encrypt certificates, eliminates certbot and renewal crons), and Docker Compose v2 plugin for production container orchestration (already used locally; only the compose file changes).
 
-**Note:** ARCHITECTURE.md was partially researched using Next.js App Router conventions (route groups, middleware, server components). The architectural patterns — Custom JWT Claims Hook, append-only service records via triggers, enlistment state machine, shared roster query — are fully portable to SvelteKit. Translate: App Router `layout.tsx` → SvelteKit `+layout.server.ts`; Next.js Middleware → SvelteKit `hooks.server.ts`; Server Actions → SvelteKit form actions. The data model, RLS patterns, and build order apply without modification.
+All GitHub Actions action versions pinned to verified stable releases as of 2026-02-12: `actions/checkout@v6` (v6.0.2), `docker/login-action@v3` (v3.7.0), `docker/setup-buildx-action@v3` (v3.12.0), `docker/metadata-action@v5` (v5.10.0), `docker/build-push-action@v6` (v6.19.2), `appleboy/ssh-action@v1` (v1.2.5). BuildKit registry cache (`type=registry`) cuts repeat builds from ~3 minutes to ~30 seconds.
 
 **Core technologies:**
-- **SvelteKit 2 / Svelte 5**: Full-stack framework — SSR for public pages, form actions for all mutations, zero virtual DOM overhead
-- **Supabase (supabase-js v2 + @supabase/ssr v0.8)**: PostgreSQL + Discord OAuth + file storage + realtime — single SDK, cookie-based SSR sessions
-- **Tailwind CSS v4**: Utility-first custom dark tactical aesthetic — zero runtime JS, CSS-native variables, Vite plugin (no config file)
-- **sveltekit-superforms v2 + Zod v4**: Server-validated forms with progressive enhancement — enlistment, promotion requests, award submissions
-- **adapter-node v5**: Docker/VPS deployment — multi-stage Dockerfile, port 3000, Nginx reverse proxy for SSL
+- **GitHub Actions (ubuntu-latest):** Pipeline automation — native to the repo; no external CI service; generous free tier
+- **GHCR (ghcr.io):** Image registry — authenticated via `GITHUB_TOKEN`; co-located with codebase; no rate limits
+- **Caddy v2.10.2-alpine:** Reverse proxy + auto-HTTPS — 3-line Caddyfile replaces nginx+certbot complexity
+- **Docker Compose v2 plugin:** Production orchestration — already used locally; only the compose file changes
+- **appleboy/ssh-action@v1:** SSH deploy — industry-standard action for single-VPS deployment
 
 ### Expected Features
 
-Research against PERSCOM.io, UNITAF, and five live PERSCOM installations confirms a clear MVP and prioritization hierarchy. See `FEATURES.md` for the full prioritization matrix.
+The research distinguishes features needed for v1.1 launch (P1), post-validation additions (P2), and future considerations (P3). The pipeline is non-functional without all P1 items.
 
-**Must have (table stakes — v1 launch):**
-- Landing page with Delta Force / 1st SFOD identity and branding
-- Unit structure / ORBAT (recruits check this before applying)
-- Enlistment application form (primary recruit funnel — without it the site is read-only)
-- Discord OAuth login (no password friction; unit is Discord-centric)
-- Soldier profile: rank, callsign, MOS, status, unit assignment
-- Service record with promotion and award entries (core PERSCOM functionality)
-- Awards display on profile
-- Internal member roster
-- Role-based access control — Admin / Command / NCO / Member (required before any admin actions exist)
-- Enlistment workflow: Submitted → Under Review → Interview Scheduled → Accept/Deny
+**Must have — v1.1 launch (P1):**
+- GitHub Actions workflow (build + push to GHCR on push to `main`)
+- SSH deploy step (`docker compose pull` + `up -d --no-deps app`)
+- Updated `docker-compose.yml` (GHCR image reference, `restart: unless-stopped`, Caddy service)
+- Caddy container in compose (reverse proxy, HTTP/3 ports 80/443/443-udp)
+- Let's Encrypt HTTPS via Caddy (automatic; no certbot)
+- GitHub Secrets configured (SSH_HOST, SSH_USER, SSH_PRIVATE_KEY; GHCR_TOKEN if private repo)
+- Tagged image versioning (git SHA + `latest` tags via `docker/metadata-action`)
 
-**Should have (v1.x — add after first cohort is onboarded):**
-- Qualifications / certifications tracking
-- Event / operation management with attendance records
-- Transfer orders system
-- Command-driven promotion workflow (formalized approval chain)
-- Public unit statistics counters
+**Should have — add after first stable deploy (P2):**
+- Health check endpoint (`/health` route in SvelteKit + Docker `HEALTHCHECK`)
+- Discord deployment notifications (webhook to #deployments channel)
+- BuildKit layer cache in GitHub Actions (cuts repeat build times significantly)
+- `DEPLOY.md` documentation (runbook for secrets, VPS setup, rollback procedure)
 
-**Defer (v2+):**
-- Discord role sync (bidirectional) — requires Discord bot, significant complexity, wait until roles are settled
-- After Action Report submission system — editorial overhead; build after event system is mature
-- Visual timeline for service record — polish feature; tabular list is sufficient at small scale
-- Qualification expiry tracking — only relevant once qualifications have been running long enough to expire
+**Defer — v1.2+ (P3):**
+- Zero-downtime deployment (`docker-rollout` or blue-green) — only if 502s reported during deploys
+- Parameterized rollback workflow — only after a bad deploy reaches production
+- Staging smoke-test step — only if breaking-change frequency increases
 
-**Hard anti-features (do not build):**
-- In-game K/D or performance stat tracking — breeds toxicity; meaningless in milsim
-- Forum / discussion board — Discord already handles this and a forum will die within weeks
-- Public leaderboards — use awards and decorations for recognition instead
+**Anti-features confirmed — do not add:**
+- Kubernetes, Docker Swarm, Terraform — massively disproportionate to a single-VPS milsim site
+- Automated database migrations in CI pipeline — Supabase migrations run separately via MCP/CLI
+- Watchtower — removes deployment control and auditability
+- Self-hosted GitHub Actions runner — adds VPS failure mode to CI
 
 ### Architecture Approach
 
-The system separates into two clear route groups sharing a single Supabase project: a public site (no auth, SSR-rendered for SEO) and an authenticated member portal (session-gated, RLS-enforced). All route protection runs in `hooks.server.ts`, which reads the `user_role` JWT claim without a DB round-trip. Four architectural patterns underpin the entire system: (1) Custom Access Token Hook injects role into JWT so RLS policies can evaluate `auth.jwt() ->> 'user_role'` without a second DB query; (2) service records as an append-only PostgreSQL audit log maintained by triggers, not application code; (3) enlistment flow as an explicit state machine with DB-level transition validation; (4) a single shared roster query driving three presentation layers (card, tree, table) to avoid N+1 fetches.
+The production architecture is a two-service Docker Compose stack on a single VPS: a Caddy container that owns ports 80/443 and proxies to the app container via Docker's internal DNS (`app:3000`), and the app container that exposes port 3000 only on the internal Docker bridge network. All config files (`docker-compose.yml`, `Caddyfile`) live in the repo and are SCP'd to `/opt/asqn/` on every deploy. The `.env` file lives only on the VPS and is never written by CI. The GitHub Actions pipeline uses two sequential jobs: `build` (checkout → GHCR login → metadata → build + push) and `deploy` (SCP compose files → SSH pull → SSH up `--no-deps app` → image prune). Only the app container restarts on deploy; Caddy stays up continuously, preserving TLS state and avoiding cert re-provisioning.
 
 **Major components:**
-1. **Public Site** (`/(site)/` route group) — Landing, ORBAT, rank chart, enlistment form, leadership; SSR; anon Supabase key, insert-only for enlistment
-2. **Member Portal** (`/(app)/dashboard/`) — Soldier profile, service record, awards, attendance; authenticated RLS-filtered queries
-3. **Admin Panel** (`/(app)/admin/`) — Roster management, personnel actions, enlistment review, event management; authenticated client for reads, service_role scoped to specific server actions for privileged writes
-4. **Supabase Auth + Custom JWT Hook** — Discord OAuth, session cookies, role injection into JWT on token issuance via `custom_access_token_hook`
-5. **PostgreSQL Triggers** — Auto-append to `service_records` on every personnel action; database enforces audit integrity, not application code
-6. **Supabase Storage** — `avatars` bucket (public), `documents` bucket (private, signed URLs)
+1. **GitHub Actions workflow** — triggers on push to `main`; two-job pipeline (build → deploy); actions pinned to verified stable versions
+2. **GHCR image store** — stores `latest` + `sha-{commit}` tags; BuildKit registry cache enables fast incremental builds; SHA tags enable rollback
+3. **Caddy container** — public HTTPS entry point; TLS cert in `caddy_data` named volume; proxies to `app:3000` via Docker DNS; HTTP→HTTPS redirect is automatic
+4. **app container** — SvelteKit Node server; no published ports; secrets from `env_file: .env` at runtime; `ORIGIN` set in compose `environment:` block
+5. **VPS `/opt/asqn/`** — deployment working directory; `docker-compose.yml` and `Caddyfile` synced from repo on each deploy; `.env` written once manually, never overwritten by CI
 
 ### Critical Pitfalls
 
-1. **RLS disabled on tables** — New tables created via SQL migrations default to RLS off; all rows are publicly readable via the anon key with no error. Prevention: `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` at the end of every `CREATE TABLE` — no exceptions. Run Supabase Database Advisor after every migration batch. This is the #1 data exposure pattern in Supabase deployments (CVE-2025-48757).
+All 10 pitfalls in PITFALLS.md are production-relevant. The top 5 to prevent during implementation:
 
-2. **Service record as mutable fields** — Implementing rank and awards as `UPDATE`-able columns on the `soldiers` table destroys the audit trail that is the core value of a PERSCOM system. Prevention: model `rank_records`, `soldier_awards`, and `service_records` as append-only tables from day one; derive current rank from the most recent record. This schema decision is irreversible once data exists.
+1. **ORIGIN=localhost causes 403 on all form actions** — The current `docker-compose.yml` has `ORIGIN=http://localhost:3000`. Every SvelteKit form action returns 403 in production. Set `ORIGIN=https://asqnmilsim.us` in the production compose `environment:` block before first deploy. Test by submitting any form action post-deploy.
 
-3. **JWT staleness after role changes** — Custom JWT claims (role) are immutable until the token expires (default 1 hour). A demoted or banned member retains access during that window — a security issue, not just UX. Prevention: keep token TTL at 1 hour; for security-critical revocations (bans, demotions), implement a `force_reauth_at` check in a `profiles` policy that bypasses JWT claims.
+2. **Docker bypasses UFW — port 3000 reachable publicly** — Docker inserts NAT rules into iptables at a level UFW cannot intercept. Use `expose:` (not `ports:`) on the app service; put both services on a named Docker bridge network; only Caddy publishes 80/443. Verify with `curl http://VPS_IP:3000` from external — must return connection refused.
 
-4. **Application-layer-only role checks** — Checking `if user.role === 'Admin'` in a SvelteKit load function without a corresponding RLS policy means anyone can call Supabase directly from the browser with the anon key and bypass all guards. Prevention: RLS is the enforcement layer; UI role checks are cosmetic only. Every table needs RLS policies for every operation.
+3. **Caddy `caddy_data` volume not persisted — Let's Encrypt rate limit (5 certs/domain/week)** — Declare named volumes for `/data` and `/config` in compose. Use staging ACME endpoint (`acme_ca https://acme-staging-v02.api.letsencrypt.org/directory`) during setup and testing; remove only at production go-live.
 
-5. **Testing RLS as superuser** — The Supabase SQL Editor runs as `postgres`, which bypasses all RLS silently. "It works in the SQL Editor" is not evidence that RLS is correct. Prevention: all role tests must run through the Supabase JS client with a real authenticated session for each role; never the SQL Editor for RLS verification.
+4. **`PUBLIC_SUPABASE_URL` missing at build time — empty Supabase client, no build error** — SvelteKit `$env/static/public` vars are inlined at build time by Vite. Pass `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` as Docker build args in the `docker/build-push-action` step. Store as GitHub Actions Variables (not Secrets — they are already public-facing values visible in the browser).
+
+5. **Secrets baked into Docker image via `ARG`** — Never pass `SUPABASE_SERVICE_ROLE_KEY` as a Dockerfile `ARG`; it persists in image layer history. Runtime secrets go in `.env` on the VPS, consumed via `env_file:` in compose. Verify with `docker history --no-trunc <image>` after the first build.
+
+---
 
 ## Implications for Roadmap
 
-Based on combined research, the build order is dictated by hard dependencies. Auth must exist before protected routes. The data model with RLS must be locked before application code that queries it. Public-facing pages are largely independent but share the Supabase client setup. Personnel actions must exist before the roster has data to display. The enlistment pipeline requires the soldier creation flow to work end-to-end.
+Research establishes a hard dependency order. DNS propagation is the longest-lead item (can take hours) and must be initiated before Caddy first starts. VPS infrastructure must exist before the pipeline can deploy into it. The production compose file must be correct before the first workflow run — retrofitting networking errors (port exposure, ORIGIN) requires a full redeploy. The GitHub Actions workflow is the last piece, not the first.
 
-### Phase 1: Foundation — Auth, Data Model, and RLS
+### Phase 1: VPS Provisioning and Production Compose
 
-**Rationale:** Auth is the prerequisite for every authenticated feature. The data model and RLS policies are the prerequisite for every query. These two concerns are so tightly coupled that building one without the other causes rebuilds. This is the phase where irreversible schema decisions are made.
-**Delivers:** Discord OAuth login, working sessions in SvelteKit hooks, `soldiers` / `ranks` / `units` / `service_records` schema, `user_roles` table, Custom Access Token Hook injecting role into JWT, RLS policies for all tables, role constants and middleware helpers.
-**Addresses features:** Discord OAuth login, RBAC (four roles)
-**Avoids pitfalls:** RLS disabled on tables, JWT staleness design, app-layer-only role checks, service record mutability (schema committed here), Discord as sole auth (internal UUID vs. `discord_id` separation)
+**Rationale:** DNS propagation is the longest-lead item with no workaround — start first so DNS is resolving by the time Caddy provisions its initial TLS certificate. The ORIGIN misconfiguration and Docker UFW bypass are the two most common first-deploy failures; both must be addressed in the compose file before any workflow runs. Caddy volume persistence and restart policies must be in the compose file before the first container start.
 
-### Phase 2: Public Site
+**Delivers:** Running VPS with Docker CE + Compose v2 plugin installed from the official Docker apt repo; `/opt/asqn/` directory created; `.env` written with production Supabase keys and `ORIGIN=https://asqnmilsim.us`; DNS A-record pointing to VPS IP; modified `docker-compose.yml` committed to repo (Caddy service, internal network, `expose:` on app, `restart: unless-stopped`, named volumes); `Caddyfile` committed with staging ACME endpoint; dedicated `deploy` user with restricted `authorized_keys`.
 
-**Rationale:** Public pages are largely independent of auth and can be developed in parallel after Phase 1 establishes the Supabase client pattern. SEO-critical pages (recruitment, about, ORBAT) need SSR from day one. The enlistment form is the only public page with a Supabase write.
-**Delivers:** Landing page with Delta Force branding, About / unit history, ORBAT, rank chart, leadership roster (public), enlistment application form (anon insert to `enlistments`), Discord link / contact
-**Addresses features:** All P1 public-facing table stakes
-**Uses:** SvelteKit `+page.server.ts` load functions, Tailwind v4 custom tactical theme, Superforms + Zod for enlistment form, anon Supabase client
-**Research flag:** None — well-documented SSR patterns; Tailwind v4 SvelteKit guide is official
+**Addresses (FEATURES.md P1):** Updated docker-compose.yml, Caddy container, Let's Encrypt HTTPS, restart policy, GitHub Secrets (SSH key half).
 
-### Phase 3: Soldier Profile and Service Record
+**Avoids (PITFALLS.md):** ORIGIN=localhost 403, Docker UFW bypass, Caddy volume not persisted, no restart policy, SSH deploy key unrestricted.
 
-**Rationale:** The soldier profile is the "military ID card" — the anchor object that all other personnel features attach to. Service records are append-only from day one (schema committed in Phase 1); this phase builds the display and the mutation flows. Awards are included here because they are visually prominent on profiles and motivate member engagement from day one.
-**Delivers:** Soldier profile page (rank, callsign, MOS, status, unit assignment), service record display (chronological, append-only), awards display with insignia images, rank insignia display, member status badge
-**Addresses features:** Soldier profile, service record, awards display, rank display — all P1
-**Avoids pitfalls:** Service record mutability (display confirms append-only model), N+1 roster queries (profile page joins awards and rank in one query)
+### Phase 2: GitHub Actions Workflow and Build Strategy
 
-### Phase 4: Core Admin — Roster, Personnel Actions, Enlistment Pipeline
+**Rationale:** The workflow references VPS secrets and GHCR — Phase 1 must be complete before the workflow can run. Dockerfile layer order and the `PUBLIC_*` build-arg strategy must be settled before the first GHCR push; fixing it after means re-pushing corrected images. BuildKit cache configuration must be set from the first run to avoid establishing a slow baseline.
 
-**Rationale:** This phase builds all admin-facing workflows. The roster is the command's operational view; it comes after profiles exist and have data. Personnel actions (promote, award, qualify) write to the append-only log established in Phase 1. The enlistment review queue closes the loop from the public form. RBAC gates all admin routes.
-**Delivers:** Internal member roster (card / tree / table views from shared query), admin personnel actions (promotion, award, qualification, status change), enlistment review queue with state machine transitions (Submitted → Under Review → Interview → Accept/Deny), soldier record auto-creation on acceptance
-**Addresses features:** Member roster, enlistment workflow, RBAC enforcement across admin routes — all P1
-**Avoids pitfalls:** Anti-Pattern 5 (roster built after auth), enlistment state machine without transition validation, testing RLS as superuser (write role-based tests in this phase)
-**Research flag:** Enlistment state machine transition validation in PostgreSQL needs careful implementation — confirm DB-level check constraint vs. trigger approach
+**Delivers:** `.github/workflows/deploy.yml` (two-job pipeline with explicit `packages: write` permission); GitHub Secrets configured (SSH_HOST, SSH_USER, SSH_PRIVATE_KEY, GHCR_TOKEN if private); GitHub Actions Variables for `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY`; Dockerfile `ARG` + `ENV` for public build-time vars; BuildKit registry cache (`cache-from`/`cache-to: type=registry`).
 
-### Phase 5: Events, Attendance, and Extended Personnel
+**Addresses (FEATURES.md P1):** GitHub Actions build + push to GHCR, SSH deploy step, tagged image versioning, GitHub Secrets setup.
 
-**Rationale:** Event management and attendance tracking are the natural next layer once the core personnel system is working. These features require the event → attendance → service_record linkage to be meaningful. Transfer orders and the formal promotion workflow are also built here as the unit grows beyond a small founding group.
-**Delivers:** Event / operation creation with type and attendance flags, attendance tracking per soldier per event (RSVP + actual attendance), attendance record on soldier profile, transfer orders system, command-driven promotion workflow (request → approve → service record auto-updated)
-**Addresses features:** All P2 features from the prioritization matrix
-**Research flag:** May need deeper research on the formal promotion approval workflow — specifically whether to use Supabase Realtime for admin notifications or a polling approach
+**Addresses (FEATURES.md P2 — add here):** Build layer cache.
 
-### Phase 6: Polish and Hardening
+**Avoids (PITFALLS.md):** GHCR `packages: write` missing, `PUBLIC_*` vars empty at build time, secrets baked into image, build cache busting from incorrect layer order, using fine-grained PAT instead of `GITHUB_TOKEN`.
 
-**Rationale:** Before the site is presented publicly as the unit's primary face, UX gaps and performance baselines need to be addressed. This phase is not about features — it is about making the existing features production-quality.
-**Delivers:** Loading skeletons on async roster / service record queries, confirmation modals for destructive actions, toast notifications for role changes, mobile-responsive audit, contrast and WCAG compliance check, index optimization on all RLS policy columns, soft-delete verification (no hard deletes of soldier records), full "Looks Done But Isn't" checklist from PITFALLS.md
-**Avoids pitfalls:** All UX pitfalls, RLS performance traps, storage bucket audit
+### Phase 3: Validation, Observability, and Documentation
 
-### Phase 7: Discord Integration (v2+)
+**Rationale:** Can only execute after Phase 2 produces a working end-to-end deploy. Health check and Discord notifications are independent of each other and of the core pipeline — add after the first successful automated deploy is confirmed. The "looks done but isn't" checklist from PITFALLS.md verifies all 10 gotchas are resolved before considering v1.1 complete.
 
-**Rationale:** Discord role sync requires a bot with `Manage Roles` permission — a separate infrastructure concern from the web app. This is deferred until the unit is stable, roles are settled, and the core system has been validated by real usage. Building this prematurely means rebuilding it as roles evolve.
-**Delivers:** Discord bot, bidirectional role sync (rank/status changes update Discord roles), Discord notifications for personnel actions
-**Addresses features:** Discord role sync (P3), notifications (P3)
-**Research flag:** Needs dedicated research phase — Discord bot + SvelteKit webhook integration is not a standard pattern; rate limits and Manage Roles permission scoping need verification
+**Delivers:** `/health` route in SvelteKit returning 200 + Docker `HEALTHCHECK` instruction; Discord webhook notification on deploy success/failure; `DEPLOY.md` runbook (secrets setup, VPS setup steps, rollback procedure using SHA tags); full PITFALLS.md verification checklist completed (ORIGIN confirmed, port 3000 blocked, HTTPS valid cert, caddy_data volume present, restart policy tested via reboot, no secrets in image, GHCR pull works on VPS, CI cache active, deploy user is not root, health check shows healthy).
+
+**Addresses (FEATURES.md P2):** Health check endpoint, Discord deployment notifications, deployment documentation.
+
+**Avoids (PITFALLS.md):** Deploy downtime without health check (health check is prerequisite for zero-downtime if needed later); silent deploy failures (Discord notifications).
 
 ### Phase Ordering Rationale
 
-- **Auth before everything**: Every authenticated feature depends on working sessions and JWT claims. The Custom Access Token Hook that injects `user_role` is the keystone — without it, RLS policies have no role to evaluate.
-- **Schema before queries**: RLS policies that reference columns that don't exist fail silently in some configurations. Lock the schema before building any feature that queries it.
-- **Append-only service records from day one**: This is the schema decision that cannot be undone once real data exists. Phase 1 commits it.
-- **Public site is parallelizable**: Phases 2 and 3 can overlap once Phase 1 is complete — public routes don't depend on personnel data, and soldier profile display doesn't depend on the public site.
-- **Admin workflows after data**: The roster and admin panel need real soldier data to be meaningful. Phase 3 (profiles) feeds Phase 4 (admin).
-- **Events after personnel**: Attendance records are foreign-keyed to both events and soldiers. Both must exist before attendance is meaningful.
+- DNS propagation is a blocking external dependency — initiate it first; everything else in Phase 1 can proceed in parallel while waiting for propagation.
+- The ORIGIN misconfiguration is the #1 first-deploy failure for SvelteKit behind a reverse proxy; it must be in the compose file before any workflow runs — not patched after.
+- Use staging ACME throughout Phases 1 and 2 validation to protect against the 5 certificates/domain/week Let's Encrypt rate limit; only switch to production ACME at Phase 3 final verification.
+- Deploy only the app container on each workflow run (`--no-deps app`) — Caddy must stay running continuously to preserve TLS state; restarting the full compose stack risks cert re-provisioning and brief outage.
+- SHA image tags are set up in Phase 2 alongside `latest`; this enables manual rollback immediately without additional tooling (SSH in, update IMAGE_TAG in compose, `docker compose up -d --no-deps app`).
 
 ### Research Flags
 
-Phases likely needing `/gsd:research-phase` during planning:
+Phases with standard, well-documented patterns (skip `/gsd:research-phase`):
+- **Phase 1:** Docker CE install from official Docker apt repo, UFW/Docker networking, Caddy named volumes, ed25519 SSH key setup — all established patterns with official documentation.
+- **Phase 2:** GitHub Actions two-job pipeline with GHCR push is the canonical example in GitHub's own documentation; `appleboy/ssh-action` is the industry standard for single-VPS SSH deploy.
+- **Phase 3:** SvelteKit `+server.ts` health endpoint is a 5-line file; Discord webhook GitHub Action is marketplace-standard.
 
-- **Phase 4 (Enlistment State Machine):** DB-level state transition enforcement in PostgreSQL (trigger vs. check constraint vs. RPC function) has implementation tradeoffs that need validation before committing to an approach.
-- **Phase 5 (Promotion Workflow):** Admin notification strategy (Supabase Realtime vs. polling vs. database webhooks to SvelteKit) needs a decision with concrete implementation research.
-- **Phase 7 (Discord Integration):** Discord bot + SvelteKit webhook architecture, role sync rate limits, and `guilds.members.read` scope behavior with large servers need dedicated research before any code is written.
+No phase requires deeper research before planning. All pitfalls and patterns are well-documented with high-confidence sources. The entire CI/CD pattern for this exact stack (SvelteKit + Docker + GHCR + Caddy + single VPS) is a commonly documented deployment architecture.
 
-Phases with standard, well-documented patterns (skip research-phase):
-
-- **Phase 1 (Auth + RLS):** Supabase Custom Claims RBAC pattern is fully documented in official Supabase docs with working SQL examples.
-- **Phase 2 (Public Site):** SvelteKit SSR + Tailwind v4 is documented in official guides with verified patterns.
-- **Phase 3 (Soldier Profile / Service Record):** Append-only audit log via PostgreSQL triggers is a standard pattern with working examples in ARCHITECTURE.md.
+---
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All versions verified against npm registries and official changelogs as of Feb 2026. Version compatibility table in STACK.md is authoritative. |
-| Features | MEDIUM | Based on live site analysis of 6 milsim unit implementations and PERSCOM.io official docs. The MVP definition is well-supported; v2+ feature prioritization is inference from community patterns. |
-| Architecture | HIGH | Supabase Custom Claims, RLS patterns, and PostgreSQL trigger approach sourced from official Supabase docs. Note: ARCHITECTURE.md uses Next.js conventions in code examples; all patterns apply to SvelteKit with direct translation (see Key Findings note above). |
-| Pitfalls | MEDIUM-HIGH | RLS pitfalls are HIGH confidence via official docs and CVE-2025-48757. Milsim-specific UX and workflow pitfalls are MEDIUM confidence via community observation and analogous systems. |
+| Stack | HIGH | All action versions verified against official GitHub release pages on 2026-02-12. Caddy v2.10.2 confirmed latest stable. Docker CE install steps from official Docker apt repo docs. No inferred versions. |
+| Features | MEDIUM | Core pipeline features (Actions, GHCR, SSH deploy, HTTPS) verified against official GitHub and Docker docs. P2/P3 features (zero-downtime, Discord notifications) sourced from community — MEDIUM confidence but these are not required for v1.1 launch. |
+| Architecture | HIGH | Two-job pipeline pattern, Caddy + app on shared Docker network, env var separation strategy all verified against official docs. Anti-patterns confirmed by official Docker, SvelteKit, and Caddy documentation. |
+| Pitfalls | HIGH | ORIGIN/CSRF pitfall backed by official SvelteKit docs + issue tracker. Docker UFW bypass backed by official Docker network docs + widely-cited ufw-docker project. Caddy volume persistence backed by official Caddy HTTPS docs. GHCR permissions pitfall backed by official GitHub packages docs. `PUBLIC_*` build-time pitfall backed by official SvelteKit adapter-node docs. |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Framework terminology mismatch in ARCHITECTURE.md:** Code examples reference Next.js App Router (`app/`, `layout.tsx`, `middleware.ts`). These are the same patterns expressed in SvelteKit as `src/routes/`, `+layout.server.ts`, and `hooks.server.ts`. No rework needed — but the roadmapper and any developer reading ARCHITECTURE.md should translate actively.
+- **VPS IP address:** The `SSH_HOST` GitHub Secret and DNS A-record both require the VPS IP. Confirm the Interserver VPS IP before Phase 1 begins. If the IP changes later, update `SSH_HOST` in GitHub Secrets; Caddy cert is tied to the domain, not the IP.
 
-- **Enlistment state machine enforcement approach:** ARCHITECTURE.md and PITFALLS.md both prescribe DB-level transition validation but stop short of a concrete implementation choice (check constraint vs. trigger vs. RPC). This needs a concrete decision during Phase 4 planning.
+- **GHCR package visibility (public vs private):** If the GitHub repo is private, the VPS needs a PAT with `read:packages` stored as `GHCR_TOKEN` to pull images. If the repo is public, the GHCR package is public by default and the `docker login` step on the VPS can be omitted. Determine repo visibility before writing the SSH deploy script.
 
-- **Notification strategy for admin workflows:** Promotion approval and enlistment review both benefit from push notifications to reviewers. The research does not prescribe a specific approach (Supabase Realtime, email via Resend, Discord DM via bot). This needs a decision during Phase 5 planning.
+- **Staging ACME endpoint removal:** PITFALLS.md recommends using `acme_ca https://acme-staging-v02.api.letsencrypt.org/directory` in the Caddyfile throughout Phase 1 and 2 to avoid consuming production Let's Encrypt rate limits during troubleshooting. The Caddyfile committed in Phase 1 should include this line; it is explicitly removed in Phase 3 as the final production go-live step.
 
-- **Discord bot hosting:** Phase 7 requires a persistent Discord bot. Where this runs (same VPS, separate container, hosted service) is undecided. Flag for research before Phase 7 planning.
+- **Deploy user vs admin user:** PITFALLS.md recommends a dedicated `deploy` user with `command=` restriction in `authorized_keys`. Determine whether to create a new user or restrict an existing user during Phase 1 VPS provisioning.
 
-- **Unit scale assumptions:** All architecture and performance recommendations assume fewer than 200 active members. This is appropriate for a new unit. If ASQN 1st SFOD grows beyond 200 members before launch, the connection pooling and indexing recommendations in ARCHITECTURE.md (Scaling Considerations section) become immediately relevant.
+---
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Supabase Custom Claims & RBAC — https://supabase.com/docs/guides/database/postgres/custom-claims-and-role-based-access-control-rbac
-- Supabase Row Level Security — https://supabase.com/docs/guides/database/postgres/row-level-security
-- Supabase SSR for SvelteKit — https://supabase.com/docs/guides/auth/server-side/sveltekit
-- Supabase Discord OAuth — https://supabase.com/docs/guides/auth/social-login/auth-discord
-- Tailwind CSS v4 SvelteKit guide — https://tailwindcss.com/docs/guides/sveltekit
-- SvelteKit GitHub releases — https://github.com/sveltejs/kit/releases
-- Svelte February 2026 blog — https://svelte.dev/blog/whats-new-in-svelte-february-2026
-- Superforms npm — https://www.npmjs.com/package/sveltekit-superforms
-- Zod v4 release — https://zod.dev/v4
-- PERSCOM.io documentation — https://docs.perscom.io/docs/introduction
-- Discord OAuth2 official docs — https://discord.com/developers/docs/topics/oauth2
+- [GitHub Docs: Publishing Docker Images](https://docs.github.com/actions/guides/publishing-docker-images) — GHCR workflow YAML, GITHUB_TOKEN permissions
+- [GitHub Docs: Working with the Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) — GHCR naming, PAT vs GITHUB_TOKEN, packages: write permission
+- [docker/build-push-action releases](https://github.com/docker/build-push-action/releases) — v6.19.2 confirmed latest stable 2026-02-12
+- [docker/login-action releases](https://github.com/docker/login-action/releases) — v3.7.0 confirmed latest stable
+- [docker/metadata-action releases](https://github.com/docker/metadata-action/releases) — v5.10.0 confirmed latest stable
+- [docker/setup-buildx-action releases](https://github.com/docker/setup-buildx-action/releases) — v3.12.0 confirmed latest stable
+- [actions/checkout releases](https://github.com/actions/checkout/releases) — v6.0.2 confirmed latest stable
+- [appleboy/ssh-action releases](https://github.com/appleboy/ssh-action/releases) — v1.2.5 confirmed latest stable
+- [Caddy releases](https://github.com/caddyserver/caddy/releases) — v2.10.2 confirmed latest stable non-beta
+- [Docker Install Ubuntu (official)](https://docs.docker.com/engine/install/ubuntu/) — official apt repo install steps, Compose v2 plugin
+- [Caddy automatic HTTPS documentation](https://caddyserver.com/docs/automatic-https) — volume persistence, ACME staging endpoint
+- [Caddy reverse_proxy directive](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy) — reverse proxy to Docker service by name
+- [SvelteKit adapter-node docs](https://svelte.dev/docs/kit/adapter-node) — ORIGIN, PROTOCOL_HEADER, HOST_HEADER behavior
+- [SvelteKit CSRF issue tracker](https://github.com/sveltejs/kit/issues/6589) — 403 Cross-site POST form submissions forbidden
+- [Docker network packet filtering and firewalls](https://docs.docker.com/engine/network/packet-filtering-firewalls/) — UFW bypass behavior (official)
+- [Docker build secrets official docs](https://docs.docker.com/build/building/secrets/) — ARG layer leakage, BuildKit secret mounts
+- [Docker restart policies](https://docs.docker.com/engine/containers/start-containers-automatically/) — unless-stopped vs always behavior
+- [GitHub Actions Docker cache (official)](https://docs.docker.com/build/ci/github-actions/cache/) — type=gha and type=registry cache configuration
+- [docker/metadata-action GitHub repo](https://github.com/docker/metadata-action) — SHA + latest tag generation
 
 ### Secondary (MEDIUM confidence)
-- PERSCOM.io product site — https://perscom.io/
-- UNITAF United Task Force — https://unitedtaskforce.net/ (live production milsim system, largest Arma 3 unit)
-- 16 Air Assault Milsim — https://16aa.net/ (long-running unit since 2004)
-- SEAL Team 3 Milsim PERSCOM installation — https://sealteam3milsim.team/perscom/
-- USSOCOM Arma III PERSCOM roster — https://www.arma-socom.com/perscom/personnel/
-- CVE-2025-48757 (170+ Lovable apps with exposed Supabase DBs, January 2025)
-- RLS performance best practices — https://supabase.com/docs/guides/troubleshooting/rls-performance-and-best-practices-Z5Jjwv
-
-### Tertiary (LOW confidence)
-- MilSim Units directory — https://milsimunits.com/ (aggregator, not authoritative; used for competitive landscape only)
-- Bohemia Interactive Forums PERSCOM thread — https://forums.bohemia.net/forums/topic/224442-web-app-unreleased-personnel-management-system-perscom-sort-of/ (community forum, older; context only)
+- [servicestack.net: SSH Docker Compose deployment](https://docs.servicestack.net/ssh-docker-compose-deploment) — SSH deploy pattern, verified against official action docs
+- [oneuptime.com: Docker with Caddy Automatic HTTPS 2026](https://oneuptime.com/blog/post/2026-01-16-docker-caddy-automatic-https/view) — Caddy Docker Compose volume patterns
+- [Zero-downtime Docker Compose deploy (jmh.me, 2024)](https://jmh.me/blog/zero-downtime-docker-compose-deploy) — blue-green pattern for future reference
+- [docker-rollout: Zero Downtime for Docker Compose](https://github.com/wowu/docker-rollout) — P3 zero-downtime option
+- [ufw-docker project](https://github.com/chaifeng/ufw-docker) — Docker UFW bypass analysis, widely cited
+- [Build attestations leaking ARG secrets (ricekot.com)](https://ricekot.com/2023/docker-provenance-attestations/) — ARG secrets in build attestation metadata
+- [GHCR fine-grained PAT incompatibility](https://github.com/orgs/community/discussions/38467) — use GITHUB_TOKEN, not fine-grained PAT for GHCR
+- [SvelteKit environment variables — static/public build-time behavior](https://maier.tech/posts/environment-variables-in-sveltekit) — PUBLIC_ vars inlined at build time by Vite
+- [Building Production-Ready CI/CD Pipeline (Medium, Jan 2026)](https://medium.com/@vokeogigbah/building-a-production-ready-ci-cd-pipeline-from-zero-to-docker-and-github-actions-707d9aa38db5) — community validation
+- [VPS SSH deployment via GitHub Actions (andrewhoog.com)](https://www.andrewhoog.com/posts/how-to-deploy-a-docker-hosted-website-using-github-actions/) — community resource, consistent with official docs
 
 ---
-*Research completed: 2026-02-10*
+*Research completed: 2026-02-12*
 *Ready for roadmap: yes*

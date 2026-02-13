@@ -1,157 +1,293 @@
 # Pitfalls Research
 
-**Domain:** Milsim unit website with PERSCOM-style personnel management system
-**Researched:** 2026-02-10
-**Confidence:** MEDIUM-HIGH (RLS/auth pitfalls HIGH via official docs; milsim-specific patterns MEDIUM via community observation and analogous systems)
+**Domain:** CI/CD deployment pipeline — SvelteKit + Docker + Caddy + GitHub Actions on a single VPS
+**Researched:** 2026-02-12
+**Confidence:** HIGH for pitfalls backed by official docs; MEDIUM for integration-specific issues verified by community reports
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: RLS Disabled on Tables — The Silent Data Leak
+### Pitfall 1: ORIGIN Set to Localhost in Production — CSRF 403 on All Form Actions
 
 **What goes wrong:**
-New Postgres tables created via SQL Editor or migrations default to RLS disabled. Every row in those tables is publicly readable through the Supabase API by anyone with the anon key — including the personnel records, service history, promotions, and enlistment applications that this system centers on. There are no error messages; data just silently flows out.
+The current `docker-compose.yml` has `ORIGIN=http://localhost:3000`. In production behind Caddy, SvelteKit's built-in CSRF protection compares the `Origin` request header against this value. Every form action (`use:enhance`, `?/action` routes) returns `403 Cross-site POST form submissions are forbidden`. Login, enlistment applications, and all mutations fail silently from the user's perspective.
 
 **Why it happens:**
-Supabase's dashboard Table Editor enables RLS by default, but SQL migrations and the SQL Editor do not. Developers writing schema migrations skip `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` because they're focused on column definitions. In January 2025, 170+ Lovable-built apps exposed databases this way (CVE-2025-48757). 83% of exposed Supabase databases involve RLS misconfiguration.
+SvelteKit adapter-node cannot infer the public URL from inside a container. The `ORIGIN` value in the existing compose file was never intended for production — it was set for local development. The Docker image works fine with `docker compose up` locally, so the problem isn't caught until first real deployment.
 
 **How to avoid:**
-Add `ALTER TABLE [table] ENABLE ROW LEVEL SECURITY;` at the end of every `CREATE TABLE` migration — no exceptions. Create a migration template or checklist that enforces this. Immediately after enabling RLS, add at minimum a deny-all policy (`USING (false)`) as a placeholder, then layer in real policies. Run Supabase's built-in Database Advisor (Dashboard → Database → Advisors) after every migration batch to catch missed tables.
+Set `ORIGIN=https://asqnmilsim.us` in the production compose file or as a GitHub Actions deployment secret. Never hardcode `localhost` in a compose file that is also used (or adapted) for production. Alternatively set `PROTOCOL_HEADER=x-forwarded-proto` and `HOST_HEADER=x-forwarded-host` and configure Caddy to forward those headers — but only do this because Caddy is a trusted reverse proxy you control, not as a public-facing workaround.
 
 **Warning signs:**
-- You can read another user's data in the browser console while authenticated as a low-privilege user
-- The Supabase Table Editor shows "RLS disabled" badge on any table with sensitive data
-- Supabase Database Advisor flags "RLS disabled" warnings
+- All form actions return 403 in production but work fine locally
+- The browser console shows "Cross-site POST form submissions are forbidden"
+- Discord OAuth callback succeeds but post-login redirects fail
 
 **Phase to address:**
-Foundation / Schema phase — RLS must be enabled on every table at creation time, not retrofitted later.
+Phase 1 (VPS + Compose setup) — the correct `ORIGIN` must be in the production compose file before the first deployment attempt.
 
 ---
 
-### Pitfall 2: JWT Staleness for Role Changes — Promoted Member Still Has Old Permissions
+### Pitfall 2: Docker UFW Bypass — Port 3000 Exposed to the Internet Despite Firewall Rules
 
 **What goes wrong:**
-The permission system uses custom JWT claims (role: "Member" | "NCO" | "Command" | "Admin") embedded in the access token via a Supabase Auth Hook. When a member is promoted — a core workflow in this system — their JWT still carries the old role until the token is refreshed. During that window, RLS policies based on `auth.jwt()->'role'` will deny or grant the wrong access. For demotions and bans this is a security issue, not just a UX one.
+Docker inserts its NAT rules directly into iptables at a level that UFW (Ubuntu's firewall) cannot intercept. When `docker-compose.yml` publishes `"3000:3000"`, port 3000 is accessible from the public internet regardless of `ufw deny 3000` — UFW's rules run in the `INPUT` chain; Docker's rules run in the `PREROUTING` chain of the `nat` table, which fires first. The result: your app is directly reachable on port 3000, bypassing Caddy's HTTPS, TLS termination, and any header security Caddy adds.
 
 **Why it happens:**
-JWTs are immutable after issuance. Supabase access tokens expire after 1 hour by default but can persist in client storage. The docs explicitly note: "When the admin removes a row from the user_roles table, user's JWT still contains the custom claim until user logs out and logs in again." Developers implementing RBAC via custom claims often don't account for this propagation delay.
+This is a well-documented but widely unknown Docker behavior. Developers verify `ufw status` shows 3000 denied and assume they're safe. The UFW check passes; the Docker bypass is invisible.
 
 **How to avoid:**
-Two complementary strategies: (1) Keep Supabase's default token expiration at 1 hour (don't increase it). (2) For security-critical changes (bans, demotions, role removals), implement a server-side revocation check — store a `force_reauth_at` timestamp in a `profiles` table and add a policy layer that checks `auth.uid()` against this table before granting access, bypassing JWT claims for security decisions. For non-security role changes (promotions), 1-hour staleness is acceptable — document this as a known UX behavior.
+Bind the app container to the Docker internal network only — do not publish ports directly to `0.0.0.0`. In production compose, configure the app service to only be reachable by Caddy on the internal Docker network:
+```yaml
+services:
+  app:
+    networks:
+      - internal
+  caddy:
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - internal
+networks:
+  internal:
+```
+Only Caddy publishes ports 80 and 443. The app container has no published ports at all. Confirm with `ss -tlnp | grep 3000` from outside the VPS — it should return nothing.
 
 **Warning signs:**
-- A promoted member complains they still can't access NCO channels right after promotion
-- A kicked member can still log in and see member data for up to an hour
-- You're setting token expiration longer than 1 hour for convenience
+- `curl http://YOUR_VPS_IP:3000` from another machine returns your app
+- `ufw status` shows 3000 denied but the curl still works
+- Port scanner shows 3000 open
 
 **Phase to address:**
-Auth & Permissions phase — design the token refresh and revocation strategy before building any role-gated UI.
+Phase 1 (VPS provisioning + production compose) — must be designed correctly before first deployment; retrofitting requires a compose file change and full redeploy.
 
 ---
 
-### Pitfall 3: Testing RLS as Superuser — All Tests Pass, Production is Broken
+### Pitfall 3: Caddy Certificate Volume Not Persisted — Let's Encrypt Rate Limits on Container Restart
 
 **What goes wrong:**
-The Supabase SQL Editor and `psql` connections run as the `postgres` superuser, which bypasses all RLS policies. A developer writes queries, tests them in the SQL Editor, sees the expected data, concludes RLS is working, deploys — and then real users see empty results or can access rows they shouldn't. This is the #1 cause of "it works for me" RLS bugs.
+Caddy automatically provisions Let's Encrypt TLS certificates and stores them in `/data`. If the Caddy container is restarted or recreated without a persistent volume for `/data`, it re-requests certificates from Let's Encrypt on every startup. Let's Encrypt enforces a rate limit of 5 duplicate certificates per domain per week. After a few redeploys or troubleshooting restarts, certificate provisioning fails with a rate-limit error, and HTTPS is broken for up to a week.
 
 **Why it happens:**
-This is a PostgreSQL fundamental: superuser bypasses RLS unless `SET ROLE` is used explicitly. The Supabase SQL Editor gives no visual indication that it's bypassing RLS. Most tutorials don't highlight this.
+Developers using Caddy for the first time treat it like a stateless container. The auto-HTTPS feature makes it feel like there's nothing to persist. The data directory is invisible unless you explicitly read Caddy's documentation on persistent storage.
 
 **How to avoid:**
-Never test RLS from the SQL Editor. Test only through the Supabase JavaScript client with a real authenticated session for each role (Member, NCO, Command, Admin) and as an unauthenticated user. Create a dedicated test script or Playwright/Vitest test suite that signs in as a fixture user for each role and asserts what data is and isn't visible. Keep at least one test user per role in your local dev database.
+Always define a named Docker volume for Caddy's `/data` and `/config` directories:
+```yaml
+services:
+  caddy:
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+volumes:
+  caddy_data:
+  caddy_config:
+```
+Use Caddy's staging ACME endpoint during initial setup and testing: set `acme_ca https://acme-staging-v02.api.letsencrypt.org/directory` in your Caddyfile. Only switch to production ACME after verifying the full pipeline works. Staging certificates produce browser warnings but don't consume production rate limits.
 
 **Warning signs:**
-- Your only RLS testing is in the SQL Editor
-- You've never tested as an unauthenticated user
-- You can't list what a Member-role user cannot see
+- Caddy container restarts show "too many certificates already issued" in logs
+- HTTPS stops working after a redeploy
+- `docker logs caddy` shows ACME challenge failures
 
 **Phase to address:**
-Auth & Permissions phase — write role-based access tests before building any feature that depends on them.
+Phase 1 (Caddy configuration) — volumes must be declared in the initial compose file. Use staging ACME during Phase 1 setup; switch to production ACME only in the final verification step.
 
 ---
 
-### Pitfall 4: Hardcoding Roles in the Application Layer Instead of Enforcing at Database Level
+### Pitfall 4: Secrets Leaked via Docker ARG into Image Layers
 
 **What goes wrong:**
-The front-end or API route checks `if user.role === 'Admin'` before showing data, but the underlying Supabase query has no RLS restriction. If anyone crafts a direct Supabase client call — trivially easy with the anon key exposed in the browser — they bypass all application-layer role checks entirely.
+If build-time secrets (like `SUPABASE_SERVICE_ROLE_KEY`) are passed as `ARG` or `ENV` in a Dockerfile, they are permanently embedded in image metadata. Anyone who can pull the image from GHCR (or runs `docker history --no-trunc <image>`) can read the secrets. With Docker's build attestations enabled by default in recent versions of `docker/build-push-action`, secrets passed as build args are also exposed in attestation metadata, accessible via `docker buildx imagetools inspect`.
 
 **Why it happens:**
-Developers coming from traditional full-stack backgrounds (Express + ORM) think in terms of middleware guards. The mental model is "I check the role, then fetch the data." In Supabase's architecture, the database is directly queryable from the browser, so the database must be the last line of defense.
+The most common cause: a developer copies environment variables from their `.env` file into `ARG` instructions to make them available during `npm run build`, not realizing the values persist in layers. For SvelteKit specifically, `PUBLIC_SUPABASE_URL` is needed at build time for `$env/static/public` — so developers assume all env vars must be build args.
 
 **How to avoid:**
-Treat RLS as the authoritative permission layer. Front-end role checks are UI helpers only (to show/hide buttons). Every table needs RLS policies for every operation (SELECT, INSERT, UPDATE, DELETE) that reflect the permission matrix. Use Supabase's `auth.uid()` and `auth.jwt()` in policies, not application code.
+Only `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` are needed at SvelteKit build time (they are baked into the client bundle via `$env/static/public`). These are already public-facing values — they appear in every browser request — so embedding them in the image is acceptable. `SUPABASE_SERVICE_ROLE_KEY` and `ORIGIN` are runtime variables, not build-time. Pass them via `env_file` or `environment:` in docker-compose at container start, never as Dockerfile `ARG`. If you genuinely need a secret at build time, use Docker BuildKit's `--secret` mount, which does not persist in layers:
+```dockerfile
+RUN --mount=type=secret,id=my_secret,target=/run/secrets/my_secret \
+    cat /run/secrets/my_secret
+```
 
 **Warning signs:**
-- Any Supabase `select()` call that doesn't have a corresponding RLS policy covering it
-- You're using the service role key on the client side to "simplify" access
-- Role checks only exist in React components or API route guards
+- `docker history --no-trunc <image>` shows environment variable values in layer commands
+- Your Dockerfile has `ARG SUPABASE_SERVICE_ROLE_KEY`
+- `docker buildx imagetools inspect` returns build arg values
 
 **Phase to address:**
-Auth & Permissions phase — design the full permission matrix (what can Admin/Command/NCO/Member read, write, update, delete) before writing a single query.
+Phase 2 (Dockerfile + GitHub Actions build) — secrets strategy must be settled before the first GHCR push. Verify with `docker history` after the first build.
 
 ---
 
-### Pitfall 5: Service Record Mutability — Overwriting History Instead of Appending It
+### Pitfall 5: GHCR Push Fails Due to Missing `packages: write` Permission
 
 **What goes wrong:**
-The service record system (promotions, awards, qualifications, transfers) gets implemented as mutable fields on the `members` table: `rank = 'SGT'`, `award_count = 3`. When a member is promoted, the old rank is overwritten. When an award is revoked, the count decrements. The audit trail — the core value proposition of a PERSCOM system — is destroyed.
+The GitHub Actions workflow fails at the push step with `Error response from daemon: denied` or `unauthorized`. The `GITHUB_TOKEN` available in workflows has read-only package permissions by default. Without explicitly granting `packages: write`, every image push to GHCR will fail, even if the repository settings appear correct.
 
 **Why it happens:**
-CRUD thinking. Developers reach for `UPDATE members SET rank = 'SGT'` because it's the simplest implementation. The distinction between "current state" and "event history" isn't obvious until someone asks "when was this person promoted?" and the answer is gone.
+GitHub's default `GITHUB_TOKEN` permissions are intentionally minimal. Developers assume that because the token authenticates to GitHub, it can push to GHCR. The login step may even succeed (authentication != authorization), making the failure appear later and less obviously connected to permissions.
 
 **How to avoid:**
-Model the service record as an append-only event log from the start. Every change to rank, awards, qualifications, and unit assignments is a new row in a `service_events` table with `(member_id, event_type, old_value, new_value, effective_date, recorded_by, notes)`. The current rank is derived by querying the latest promotion event, or materialized into the `profiles` table for display performance. Never update historical records — only add corrections as new events with a `corrects_event_id` reference.
+Explicitly declare package permissions in the workflow file:
+```yaml
+permissions:
+  contents: read
+  packages: write
+```
+Use `secrets.GITHUB_TOKEN` (not a PAT) for GHCR authentication — it's scoped to the workflow run and rotates automatically. Do not use fine-grained PATs with GHCR; they are not supported and will return 403.
 
 **Warning signs:**
-- Your `members` table has `rank`, `awards`, `qualification_badges` as direct columns that get `UPDATE`d
-- There is no `created_at`, `recorded_by` on rank/award fields
-- You can't answer "what was this person's rank on [specific date]?"
+- Login step succeeds but push step fails with "denied"
+- 403 or 401 errors on `docker push ghcr.io/...`
+- Using a fine-grained PAT instead of `secrets.GITHUB_TOKEN`
 
 **Phase to address:**
-Data Model phase (before any service record UI is built) — the schema decision here is irreversible once data exists.
+Phase 2 (GitHub Actions CI workflow) — add permissions block to the workflow YAML before the first push attempt.
 
 ---
 
-### Pitfall 6: Enlistment Workflow Without State Machine Discipline — Ghost Applications and Double-Approvals
+### Pitfall 6: SSH Deployment Key Has No Passphrase Restriction — VPS Fully Accessible if Key Leaks
 
 **What goes wrong:**
-The enlistment pipeline (apply → review → interview → accept/deny) is implemented with a simple `status` enum field. Two reviewers can simultaneously transition the same application from `review` to `interview`, creating duplicate interviews. A denied application can be re-opened by someone who didn't see the denial. Applications get stuck in intermediate states with no path forward.
+A deployment SSH key is generated, the private key is stored in GitHub Secrets, and the public key is added to `~/.ssh/authorized_keys` on the VPS with no restrictions. If the private key is ever exposed (e.g., accidentally logged, leaked via a compromised third-party action), an attacker has full shell access to the VPS as the deployment user.
 
 **Why it happens:**
-State machines feel like over-engineering for small units. The temptation is to just show the current status and let users update it. Without explicit state transition rules enforced at the database level, any authorized user can write any status value.
+Speed. Generating an unrestricted key pair and copy-pasting into GitHub Secrets is a 2-minute process. Adding restrictions requires reading `authorized_keys` format documentation.
 
 **How to avoid:**
-Define valid state transitions explicitly in a Postgres function or check constraint. Only allow transitions that are valid: `pending` → `under_review`, `under_review` → `interview_scheduled` | `denied`, `interview_scheduled` → `accepted` | `denied`. Enforce this via a trigger or RPC function that rejects invalid transitions. Use Postgres `SELECT FOR UPDATE` or optimistic locking (a `version` column) to prevent concurrent updates on the same application row.
+Restrict the deployment key in `authorized_keys` to only the commands needed for deployment:
+```
+command="cd /opt/asqn && docker compose pull && docker compose up -d",no-port-forwarding,no-X11-forwarding,no-agent-forwarding ssh-ed25519 AAAA...
+```
+Create a dedicated `deploy` user with no sudo rights rather than using root or the main admin user. The key should only be able to execute the specific deployment commands. Also restrict in UFW: only allow SSH from known IP ranges if GitHub Actions runner IPs are stable enough (they publish CIDR ranges).
 
 **Warning signs:**
-- Your enlistment `status` is updated via a direct `UPDATE` statement with no transition validation
-- Two NCOs can both click "Schedule Interview" on the same application
-- There's no record of who changed the status or when
+- The deployment user is `root`
+- `~/.ssh/authorized_keys` has the key with no `command=` restriction
+- You would not notice if the deployment key was used for an interactive login
 
 **Phase to address:**
-Enlistment Workflow phase — model the state machine before building the UI.
+Phase 1 (VPS provisioning + SSH hardening) — key restrictions and dedicated deploy user must be set up before the private key is stored in GitHub Secrets.
 
 ---
 
-### Pitfall 7: Discord as Sole Auth — Unit Identity Tied to a Third-Party Platform
+### Pitfall 7: No Restart Policy — App Goes Down After VPS Reboot and Stays Down
 
 **What goes wrong:**
-Every member's identity is their Discord account. If a member's Discord account is banned, hacked, or deleted, they lose all access to their service record permanently. If Discord changes their OAuth scopes, terms of service, or API behavior, the entire auth system breaks. There is no recovery path for legitimate members who lose Discord access.
+The current `docker-compose.yml` has no `restart:` policy. After a VPS reboot (kernel update, provider maintenance, crash), the Docker daemon restarts but the containers do not. The site is down until someone manually runs `docker compose up -d`. For a small unit where the admin may not check the site daily, this can mean days of downtime.
 
 **Why it happens:**
-Discord is central to milsim unit operations — everyone already has an account, it handles voice comms, and it's the natural identity layer. The convenience is real. But "everyone has it now" is not the same as "it's a stable identity provider forever."
+Restart policies feel like an edge case during development. Local Docker Compose usage never needs them. The omission is only noticed after the first unexpected reboot.
 
 **How to avoid:**
-Store the Discord user ID (`discord_id`) as the canonical external identifier in a `profiles` table, but decouple it from the internal `id` (Supabase UUID). This allows: (1) future migration to a different Discord account for the same member, (2) an admin-level "account recovery" flow where a Command member can re-link a service record to a new Discord ID. Document the account recovery process in the admin panel even if it's initially just a note saying "contact admin."
+Add `restart: unless-stopped` to every service in the production compose file:
+```yaml
+services:
+  app:
+    restart: unless-stopped
+  caddy:
+    restart: unless-stopped
+```
+Use `unless-stopped` rather than `always` — `always` will restart containers even after you manually stop them for maintenance, while `unless-stopped` respects intentional stops but recovers from crashes and reboots.
 
 **Warning signs:**
-- Your `members` table primary key is the Discord user ID (not a Supabase UUID)
-- There's no admin UI to re-link a member's Discord account
-- No documented recovery procedure exists
+- `docker compose ps` after a reboot shows containers with `Exit` status
+- The site is down but no deployment ran
+- Your compose file has no `restart:` key
 
 **Phase to address:**
-Auth & Data Model phase — separate internal and external identity from the start.
+Phase 1 (production docker-compose.yml) — add restart policies before the first production deployment.
+
+---
+
+### Pitfall 8: Build Cache Busting on Every Run — Slow CI from Ignored Dependency Layers
+
+**What goes wrong:**
+Every GitHub Actions workflow run rebuilds the Docker image from scratch, taking 3–5 minutes for dependency installation alone. The `node_modules` layer is rebuilt even when `package.json` hasn't changed because `COPY . .` precedes `RUN npm ci`, invalidating the cache.
+
+**Why it happens:**
+Developers copy their working local Dockerfile to the CI workflow without ordering layers for cache efficiency. The rule — copy files that change rarely (package manifests) before running expensive commands, copy everything else after — is not obvious until CI bills start accumulating or waiting becomes painful.
+
+**How to avoid:**
+Order Dockerfile layers to maximize cache hits:
+```dockerfile
+# Copy package manifests first — only invalidates npm ci layer when deps change
+COPY package.json package-lock.json ./
+RUN npm ci
+# Copy source after — only rebuilds app layer when code changes
+COPY . .
+RUN npm run build
+```
+Use `docker/build-push-action` with `cache-from: type=gha` and `cache-to: type=gha,mode=max` to persist the GitHub Actions cache between workflow runs.
+
+**Warning signs:**
+- Every CI run shows `npm ci` downloading all packages from scratch
+- Build times are consistently 4+ minutes regardless of change size
+- `COPY . .` appears before `RUN npm ci` in your Dockerfile
+
+**Phase to address:**
+Phase 2 (Dockerfile authoring + GitHub Actions workflow) — layer order and cache configuration must be set correctly from the first Dockerfile commit.
+
+---
+
+### Pitfall 9: `PUBLIC_SUPABASE_URL` Missing at Build Time — Empty Bundle, Broken Client
+
+**What goes wrong:**
+SvelteKit's `$env/static/public` variables (prefixed `PUBLIC_`) are resolved and inlined at build time by Vite. If `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` are not present as environment variables during the `npm run build` step inside the Docker build, they resolve to empty strings. The build succeeds without error, but the resulting app has no Supabase client URL — every API call fails at runtime with a "URL must start with http" or similar error.
+
+**Why it happens:**
+`.env` files are deliberately excluded from Docker images (correctly). But `$env/static/public` vars need to exist at build time, not just runtime. This is a SvelteKit-specific behavior: static/public = compile-time; dynamic/public = runtime. Most developers learn this the hard way on first production build.
+
+**How to avoid:**
+Pass `PUBLIC_*` values as Docker build arguments for the build stage only (these are already public values — they appear in your browser's network tab — so embedding them in the image is not a security issue):
+```dockerfile
+ARG PUBLIC_SUPABASE_URL
+ARG PUBLIC_SUPABASE_PUBLISHABLE_KEY
+ENV PUBLIC_SUPABASE_URL=$PUBLIC_SUPABASE_URL
+ENV PUBLIC_SUPABASE_PUBLISHABLE_KEY=$PUBLIC_SUPABASE_PUBLISHABLE_KEY
+RUN npm run build
+```
+Pass them from GitHub Actions:
+```yaml
+- uses: docker/build-push-action@v5
+  with:
+    build-args: |
+      PUBLIC_SUPABASE_URL=${{ vars.PUBLIC_SUPABASE_URL }}
+      PUBLIC_SUPABASE_PUBLISHABLE_KEY=${{ vars.PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+```
+Store `PUBLIC_*` as GitHub Actions Variables (not Secrets) — they're not sensitive and shouldn't need secret masking. Keep `SUPABASE_SERVICE_ROLE_KEY` as a Secret, and pass it at runtime only.
+
+**Warning signs:**
+- Supabase client throws "Invalid URL" or "URL must start with http" at runtime
+- Browser network tab shows no requests to Supabase
+- The build log shows no warnings about missing env vars (the silence is the trap)
+
+**Phase to address:**
+Phase 2 (Dockerfile + GitHub Actions workflow) — define the build-arg strategy before writing the Dockerfile.
+
+---
+
+### Pitfall 10: Deployment Leaves Old Container Running During Pull — Brief Split-Brain State
+
+**What goes wrong:**
+The naive SSH deployment sequence runs `docker compose pull && docker compose up -d`. Between when the old container is stopped and the new one starts, there is a window of downtime (typically 5–15 seconds). For a low-traffic unit site this is usually acceptable, but `docker compose up -d` can also fail to recreate the container if the image pull is incomplete or if the compose file has an error — leaving the old container stopped and nothing running.
+
+**Why it happens:**
+`docker compose up -d` is the standard command everyone learns first. The pull-then-recreate sequence has no health check gate before terminating the old container.
+
+**How to avoid:**
+For a single-VPS milsim unit, brief downtime during deploy is acceptable. Mitigate with: (1) Pull the image before stopping the old container: `docker compose pull app && docker compose up -d --no-deps app`. (2) Add a health check to the app service so Docker knows when the new container is ready before marking it healthy. For true zero-downtime if it becomes needed later, the `docker-rollout` plugin (github.com/wowu/docker-rollout) handles the blue-green switch with Compose and Caddy without major infrastructure changes.
+
+**Warning signs:**
+- Users report brief outages aligned with deployment times
+- A failed deploy leaves the site completely down rather than rolling back
+- No health check defined in docker-compose.yml
+
+**Phase to address:**
+Phase 3 (GitHub Actions deploy workflow) — define the deployment sequence and add a health check before wiring up the SSH deployment step.
 
 ---
 
@@ -159,12 +295,11 @@ Auth & Data Model phase — separate internal and external identity from the sta
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Service role key in browser for "easy admin queries" | No RLS complexity to debug | Any user with DevTools can execute admin-level queries | Never |
-| Rank/awards as direct columns (not event log) | Simple CRUD, fast initial build | Complete rewrite to add audit trail; lost history | Never — model correctly from day one |
-| RLS disabled "temporarily" during development | Faster iteration, easier SQL debugging | Forgotten before launch; data exposed | Never — use SQL Editor superuser for dev exploration, but keep RLS on |
-| Single `role` enum column for permissions | Simple to implement | Can't handle edge cases (e.g., member with limited NCO access); requires schema change to extend | Only acceptable during early prototyping with a migration plan to custom claims |
-| Hard-coded role strings in application code | Fast | Any role rename breaks silently across the codebase | Use constants/enums from day one |
-| Storing sensitive member data in Supabase `user_metadata` | Easy access via `auth.uid()` | `user_metadata` is editable by the authenticated user — they can forge their own rank | Never for anything security-relevant |
+| Using `latest` image tag instead of SHA or semantic version | Simpler workflow | Silent breaking changes when base image updates; impossible to roll back to a specific known-good build | Never in production — always tag with git SHA |
+| Storing `.env` file on the VPS and `env_file: .env` in compose | Easy secret management | Secrets on disk in plaintext; git pull accidents can overwrite it; no rotation audit trail | Acceptable for a single-developer small unit site with no audit requirement, but document the file location and permissions |
+| Building the image on the VPS instead of in CI | Simpler — no GHCR setup | VPS CPU/RAM used for builds; build failures take down source on the server; no artifact history | Never — build in CI, deploy artifacts |
+| `restart: always` instead of `unless-stopped` | One less thing to think about | Container restarts after intentional `docker stop` during maintenance, requiring additional `docker rm` to truly stop | Use `unless-stopped` — same safety net, better maintenance behavior |
+| Disabling CSRF check (`checkOrigin: false`) to fix 403 errors | Fixes form actions immediately | Opens cross-site request forgery vulnerabilities on all form actions | Never for a public production site |
 
 ---
 
@@ -172,14 +307,14 @@ Auth & Data Model phase — separate internal and external identity from the sta
 
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| Discord OAuth | Hardcoding `localhost:3000` as redirect URI, forgetting to add production URL | Add both dev and prod redirect URIs to Discord Developer Portal before first test |
-| Discord OAuth | Assuming Discord username is stable identity | Use Discord `id` (numeric snowflake), not username — usernames change |
-| Discord OAuth | Not requesting `guilds` scope to verify unit membership | Request `identify` + `guilds` + `guilds.members.read` if server membership verification is needed |
-| Supabase RLS | Testing in SQL Editor (superuser bypasses RLS) | Test exclusively through Supabase JS client with authenticated sessions |
-| Supabase Storage | Creating public buckets for "convenience" during dev | Private buckets with signed URLs from the start; no public buckets for member-uploaded content |
-| Supabase Storage | No file type/size validation | Validate MIME type and file size on upload; Supabase Storage allows this via bucket config |
-| Supabase Auth Hook (RBAC) | Relying on `user_metadata` for role claims | Use a dedicated `user_roles` table read by a custom access token hook; `user_metadata` is user-editable |
-| Docker VPS | Supabase self-hosted or external Supabase? | Clarify early — self-hosting Supabase adds significant ops complexity; external Supabase (cloud) is strongly recommended for units this size |
+| SvelteKit + Caddy | Not forwarding `x-forwarded-proto` / `x-forwarded-host` headers | Caddy forwards these by default as a reverse proxy, but verify with `request.headers.get('x-forwarded-proto')` in a test endpoint |
+| SvelteKit + Caddy | Using `PROTOCOL_HEADER` + `HOST_HEADER` on a server not behind a proxy | Only set these when Caddy is the exclusive entry point; they allow header spoofing if set in a direct-access scenario |
+| GitHub Actions + GHCR | Using fine-grained PAT for GHCR authentication | Use `secrets.GITHUB_TOKEN` with `packages: write` permission — fine-grained PATs are not supported by GHCR |
+| GitHub Actions + SSH | `StrictHostKeyChecking=yes` causes first connection to fail | Add the VPS host key to known_hosts in the workflow, or use `StrictHostKeyChecking=no` with a note that this trades MITM protection for convenience |
+| Docker + UFW | Publishing app port to `0.0.0.0` and relying on UFW to block it | Docker bypasses UFW; use Docker internal networks and only publish through Caddy |
+| Caddy + Let's Encrypt | Testing HTTPS provisioning with the production ACME endpoint | Use `acme_ca https://acme-staging-v02.api.letsencrypt.org/directory` for all testing; only remove this line when confirming production go-live |
+| Docker Compose + Secrets | Setting `SUPABASE_SERVICE_ROLE_KEY` as a Dockerfile `ARG` | Pass service role key only at runtime via `environment:` or `env_file:` in compose — never in Dockerfile |
+| SvelteKit + Docker | `.env` file not present in container because it's gitignored | Correct behavior — pass secrets via compose `environment:` or GitHub Actions deployment step, never copy `.env` into image |
 
 ---
 
@@ -187,11 +322,10 @@ Auth & Data Model phase — separate internal and external identity from the sta
 
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| RLS policy columns without indexes | Roster page is slow; service record queries take 500ms+ | Index every column used in `USING` or `WITH CHECK` clauses (`member_id`, `user_id`, `unit_id`) | Noticeable at 100+ members with complex policies |
-| Calling functions in RLS policies without wrapping in SELECT | Policy re-evaluates function on every row | Wrap: `(SELECT auth.uid())` not `auth.uid()` — forces optimizer to cache the result | Any table with more than a few hundred rows |
-| Correlated subqueries in RLS policies | Very slow multi-join queries | Use `EXISTS` with indexes or `ANY` array operations instead of correlated subqueries | 50+ rows |
-| N+1 queries in roster views | Roster grid loads slowly (one query per member for awards/rank) | Fetch roster with joins or `select('*, service_events(*)')` in one query; paginate if > 50 members | 30+ members with eager-loaded relations |
-| Service record fetching full history for display | Profile page hangs loading years of events | Store current rank/awards in `profiles` table (materialized from events); query history only when explicitly requested | 100+ events per member |
+| No Docker layer caching in CI | Every push triggers a full 4–5 minute build even for 1-line changes | Use `cache-from: type=gha` in build-push-action; order Dockerfile layers correctly | Immediately — every run is slow from day one |
+| Large Docker image from single-stage build | Image is 800MB+; slow to pull on VPS during deploy | Multi-stage Dockerfile: build stage uses full Node + devDeps; runner stage copies only `build/` and `node_modules --omit=dev` to `node:22-alpine` | Noticeable at first deploy; compounds as GHCR storage fills |
+| Caddy serving SvelteKit static assets without cache headers | Every page load re-fetches JS/CSS bundles | Caddy's default reverse_proxy passes all headers through; add explicit cache headers for `/_app/immutable/` paths in Caddyfile | Noticeable on repeat visits, especially on mobile connections |
+| Docker Compose `up` pulling on every deploy even with same image | Unnecessary network transfer and VPS bandwidth | Tag images with git SHA; skip pull if SHA tag already exists locally | Low severity for small sites but adds 30–60 seconds to every deploy |
 
 ---
 
@@ -199,41 +333,27 @@ Auth & Data Model phase — separate internal and external identity from the sta
 
 | Mistake | Risk | Prevention |
 |---------|------|------------|
-| Service role key in browser bundle | Any visitor can bypass all RLS and read/write any table | Service role key only in server-side functions or environment variables — never `VITE_*` or `NEXT_PUBLIC_*` |
-| Trusting `user_metadata` for rank/role in RLS policies | Authenticated users can promote themselves by editing their own metadata via `supabase.auth.updateUser()` | Roles live in a separate `user_roles` table only admins can write; read via custom access token hook |
-| Public storage buckets for member profile photos | Profile photos are accessible to anyone with the URL — search engines can index them | Use private buckets with short-lived signed URLs for profile images |
-| No rate limiting on enlistment applications | Unit can be flooded with spam applications | Add `created_at` rate limit logic in an RLS INSERT policy (`WITH CHECK`) or Edge Function |
-| Discord `id` as primary key exposed in URLs | Exposes member Discord IDs; creates correlation attacks | Use internal Supabase UUID in all URLs; Discord ID is stored but never in public endpoints |
-| Allowing direct UPDATE on service record events table | Malicious admin can rewrite history | Service record tables should allow INSERT only, never UPDATE/DELETE via RLS; corrections are new events |
-
----
-
-## UX Pitfalls
-
-| Pitfall | User Impact | Better Approach |
-|---------|-------------|-----------------|
-| Showing "Access Denied" with no explanation | Members don't know what they can or can't see, file bug reports | Show contextual messages: "This section requires NCO rank or above" |
-| Forcing re-login after promotion with no notice | Members assume the site is broken when their new permissions don't appear | Show a toast after role change: "Your permissions have been updated — please refresh or re-login to see changes" |
-| Custom dark theme with insufficient contrast | Text is unreadable in ambient light; fails WCAG 4.5:1 contrast requirement | Never use true black (#000000) backgrounds; test all text with a contrast checker; minimum 4.5:1 for body text |
-| No loading states on Supabase async queries | Roster page appears blank or broken while fetching | Skeleton loaders on roster cards and service record tables |
-| Enlistment form with no save-draft ability | Applicant types 500 words, navigates away, loses everything | Auto-save to `localStorage` on form input; restore on return |
-| Multiple roster view states (card/tree/table) not persisted | User switches to table view, navigates to a profile, comes back to card view | Persist selected roster view in URL params or `localStorage` |
-| No confirmation on destructive actions (deny application, revoke award) | Accidental denials and revocations | Modal confirmation with reason input for any action that changes member status or service record |
+| Root user inside Docker container | Container escape or misconfiguration gives full root on host | Add `USER node` (non-root) in Dockerfile runner stage after copying build artifacts |
+| No `no-new-privileges` security opt | Process inside container can escalate privileges | Add `security_opt: - no-new-privileges:true` to app service in compose |
+| SSH port left on default 22 with password auth enabled | Brute force attacks; log noise | Change SSH port or use Fail2ban; disable password auth (`PasswordAuthentication no` in `sshd_config`); key-only auth |
+| Docker daemon socket mounted in container (`/var/run/docker.sock`) | Any container with the socket has root on the host | Never mount the Docker socket in the app or Caddy container; only in explicit tooling containers with known risk |
+| GitHub Actions secrets in workflow logs | Secrets exposed in public CI logs if accidentally echoed | GitHub masks known secrets automatically, but never `echo $SECRET` or use secrets in shell conditions that print the value |
+| `SUPABASE_SERVICE_ROLE_KEY` in a GitHub Actions `env:` block at job level | Scoped too broadly — all steps in the job can access it | Pass the service role key only to the specific deployment step that needs it, or via SSH environment injection at deploy time |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **RLS:** Every table has both RLS enabled AND at least one policy — verify with `SELECT tablename FROM pg_tables WHERE schemaname = 'public'` and cross-reference with `pg_policies`
-- [ ] **Role permissions:** Tested as Member, NCO, Command, Admin, and unauthenticated — not just as admin during development
-- [ ] **Service record:** Promotions, awards, and qualifications create new event rows — not UPDATE to existing columns — verify no `UPDATE` statements exist in service record mutations
-- [ ] **Enlistment state machine:** Only valid transitions are accepted — test attempting an invalid transition (e.g., `pending` → `accepted`) and confirm it fails
-- [ ] **Discord OAuth redirect URIs:** Both localhost and production URLs are registered in Discord Developer Portal
-- [ ] **Storage buckets:** No bucket is set to public — verify in Supabase Dashboard → Storage → Buckets
-- [ ] **Service role key:** Not present in any client-side code, `.env` file exposed to browser, or committed to git — run `grep -r "service_role" .` before every deploy
-- [ ] **Audit trail:** Every mutation to member status, rank, awards, or unit assignment has `performed_by` (user ID) and `created_at` recorded
-- [ ] **Soft delete:** Discharged/removed members have their data preserved with `status = 'discharged'` — not hard-deleted — their service record must survive their departure
-- [ ] **Token refresh on role change:** After a promotion, the member's session reflects the new role within one token TTL (1 hour max) — test by promoting a member and verifying within the hour
+- [ ] **ORIGIN variable:** Confirm `ORIGIN=https://asqnmilsim.us` (not localhost) is set in the production environment — test by submitting a form action and verifying no 403
+- [ ] **Port exposure:** Confirm `curl http://VPS_IP:3000` from an external machine returns connection refused — app should only be reachable through Caddy
+- [ ] **HTTPS working:** `curl -I https://asqnmilsim.us` returns 200 with a valid (non-staging) Let's Encrypt certificate
+- [ ] **Caddy volume persisted:** `docker volume ls` shows `caddy_data` and `caddy_config` — certificates survive container recreation
+- [ ] **Restart policy:** `docker inspect <app_container> | grep RestartPolicy` shows `unless-stopped` — verify by rebooting the VPS and checking containers auto-start
+- [ ] **No secrets in image:** `docker history --no-trunc <image>` contains no secret values — check for `SUPABASE_SERVICE_ROLE_KEY` in layer history
+- [ ] **GHCR image pulls on VPS:** `docker compose pull` on the VPS succeeds without manual login — deployment user has read access to the GHCR package
+- [ ] **CI cache working:** Second CI run after no code change completes in under 60 seconds (vs. 4+ minutes for cold build)
+- [ ] **Deploy user is not root:** SSH deployment runs as a restricted `deploy` user with command restriction in `authorized_keys`
+- [ ] **Health check passes:** `docker compose ps` shows app container as `(healthy)` not just `Up`
 
 ---
 
@@ -241,12 +361,14 @@ Auth & Data Model phase — separate internal and external identity from the sta
 
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| RLS disabled on table discovered post-launch | HIGH | Enable RLS immediately; add deny-all policy; audit access logs; notify affected members if exposure was significant |
-| Service record data modeled as mutable columns, not event log | HIGH | Write a migration that reads current values and creates synthetic historical events; losing exact timestamps is unavoidable |
-| Service role key leaked in public repo | HIGH | Rotate key immediately in Supabase Dashboard; audit logs for unauthorized use; invalidate all existing sessions |
-| Enlistment workflow double-approvals | MEDIUM | Add `version` column and optimistic lock check; manually resolve duplicate states via admin panel |
-| JWT staleness causing access after demotion | MEDIUM | Force session invalidation via Supabase Auth admin API for the specific user; reduce token TTL going forward |
-| All members locked to Discord accounts, one account lost | MEDIUM | Build admin "re-link" flow immediately; for current incident, use service role to update `identities` table manually |
+| ORIGIN mismatch causing 403 on all forms | LOW | Update `ORIGIN` env var in compose, redeploy — takes 2 minutes |
+| Let's Encrypt rate limit hit | HIGH | Wait up to 7 days for rate limit reset; use staging certificate temporarily with `acme_ca` override; consider Let's Encrypt's "duplicate certificate" limit (5/week) vs "certificates per registered domain" limit (50/week) |
+| Docker port 3000 exposed publicly | LOW | Remove port binding from compose, add to internal network only, redeploy — takes 5 minutes |
+| Service role key leaked in Docker image | HIGH | Rotate `SUPABASE_SERVICE_ROLE_KEY` in Supabase Dashboard immediately; delete and re-push all affected images; audit Supabase logs for unauthorized service-role usage |
+| SSH deploy key leaked | HIGH | Remove from VPS `authorized_keys` immediately; generate new key pair; update GitHub Secrets; review VPS access logs |
+| Caddy data volume deleted | MEDIUM | Recreate volume, restart Caddy — will re-request certificates (counts against rate limit); if limit hit, use staging endpoint temporarily |
+| Failed deploy leaves site down | LOW | SSH into VPS, run `docker compose up -d` manually; investigate failed deployment in GitHub Actions logs |
+| Supabase service role key accidentally baked into image | HIGH | Rotate key in Supabase Dashboard; delete all affected images from GHCR; audit access logs |
 
 ---
 
@@ -254,33 +376,39 @@ Auth & Data Model phase — separate internal and external identity from the sta
 
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| RLS disabled on tables | Foundation / Schema | Run DB Advisor after every migration; check `pg_policies` coverage |
-| JWT staleness for role changes | Auth & Permissions | Test promotion flow: promote user, verify old token behavior, verify new token after refresh |
-| Testing RLS as superuser | Auth & Permissions | All role tests must use JS client, never SQL Editor — enforce in dev runbook |
-| App-layer-only role checks | Auth & Permissions | Code review checklist: every Supabase query maps to an RLS policy |
-| Service record mutability | Data Model | Schema review: no `rank`, `award_count` etc. as mutable columns on `members` table |
-| Enlistment without state machine | Enlistment Workflow | Test invalid transitions via API — should return error, not silently succeed |
-| Discord sole-auth lock-in | Auth & Data Model | `profiles` table has `discord_id` column separate from internal UUID primary key |
-| RLS performance (missing indexes) | Schema / Optimization | Run `EXPLAIN ANALYZE` on roster and service record queries before any public launch |
-| Storage public buckets | Storage / Media | Bucket audit: all buckets private; signed URL generation working |
-| `user_metadata` for role storage | Auth & Permissions | RLS policies reference `user_roles` table via hook — never `auth.users.raw_user_meta_data` |
+| ORIGIN=localhost in production | Phase 1: Production compose setup | Submit a form action via the deployed site — 403 = not fixed |
+| Docker UFW bypass (port 3000 exposed) | Phase 1: VPS networking + compose | `curl http://VPS_IP:3000` from external — connection refused = fixed |
+| Caddy certificate volume not persisted | Phase 1: Caddy configuration | `docker volume ls` shows caddy_data; restart Caddy container and verify HTTPS still works |
+| No restart policy | Phase 1: Production compose | Reboot VPS; `docker compose ps` shows containers running without manual intervention |
+| Secrets in Docker image layers | Phase 2: Dockerfile + build strategy | `docker history --no-trunc <image>` — no secret values visible |
+| GHCR permissions missing | Phase 2: GitHub Actions CI workflow | First image push in CI succeeds without auth errors |
+| PUBLIC_ vars missing at build time | Phase 2: Dockerfile build-args | Deploy and open app in browser — Supabase client initializes (no console URL errors) |
+| SSH deploy key unrestricted | Phase 1: VPS SSH hardening | `authorized_keys` has `command=` restriction; test that interactive SSH as deploy user is blocked |
+| No Docker layer caching | Phase 2: Dockerfile optimization | Second CI run with no code changes completes in under 90 seconds |
+| Deploy downtime during container recreation | Phase 3: Deploy workflow sequence | Monitor with uptime check during deployment — acceptable brief gap, but no extended outage |
 
 ---
 
 ## Sources
 
-- [Supabase RLS Official Docs](https://supabase.com/docs/guides/database/postgres/row-level-security) — HIGH confidence
-- [Supabase Custom Claims & RBAC Docs](https://supabase.com/docs/guides/database/postgres/custom-claims-and-role-based-access-control-rbac) — HIGH confidence
-- [Supabase RLS Performance & Best Practices](https://supabase.com/docs/guides/troubleshooting/rls-performance-and-best-practices-Z5Jjwv) — HIGH confidence
-- [Supabase Storage Access Control](https://supabase.com/docs/guides/storage/security/access-control) — HIGH confidence
-- [Supabase Discord OAuth Docs](https://supabase.com/docs/guides/auth/social-login/auth-discord) — HIGH confidence
-- [Fixing RLS Misconfigurations — ProsperaSoft](https://prosperasoft.com/blog/database/supabase/supabase-rls-issues/) — MEDIUM confidence
-- [Optimizing RLS Performance — AntStack](https://www.antstack.com/blog/optimizing-rls-performance-with-supabase/) — MEDIUM confidence
-- [Designing performant RLS schema — Caleb Brewer/Medium](https://cazzer.medium.com/designing-the-most-performant-row-level-security-strategy-in-postgres-a06084f31945) — MEDIUM confidence
-- [Supabase Best Practices — Leanware](https://www.leanware.co/insights/supabase-best-practices) — MEDIUM confidence
-- CVE-2025-48757 (170+ Lovable apps with exposed Supabase DBs, January 2025) — MEDIUM confidence (reported via multiple secondary sources)
+- [SvelteKit adapter-node docs — ORIGIN, PROTOCOL_HEADER, HOST_HEADER](https://svelte.dev/docs/kit/adapter-node) — HIGH confidence (official)
+- [SvelteKit CSRF issue tracker — Cross-site POST submissions forbidden](https://github.com/sveltejs/kit/issues/6589) — HIGH confidence (official issue)
+- [Docker packet filtering and firewalls — UFW bypass](https://docs.docker.com/engine/network/packet-filtering-firewalls/) — HIGH confidence (official)
+- [Docker UFW bypass analysis — ufw-docker project](https://github.com/chaifeng/ufw-docker) — HIGH confidence (widely cited)
+- [Caddy automatic HTTPS documentation](https://caddyserver.com/docs/automatic-https) — HIGH confidence (official)
+- [Let's Encrypt rate limits with Caddy](https://caddy.community/t/trying-to-understand-why-let-s-encrypt-rate-limited-me/5144) — MEDIUM confidence (community)
+- [Docker build secrets — secrets in ARG layers](https://pythonspeed.com/articles/docker-build-secrets/) — HIGH confidence (well-sourced)
+- [Docker build secrets official docs](https://docs.docker.com/build/building/secrets/) — HIGH confidence (official)
+- [Build attestations leaking ARG secrets](https://ricekot.com/2023/docker-provenance-attestations/) — MEDIUM confidence (security research)
+- [GHCR workflow permissions](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) — HIGH confidence (official)
+- [GHCR fine-grained PAT incompatibility](https://github.com/orgs/community/discussions/38467) — MEDIUM confidence (community, GitHub official discussion)
+- [Docker restart policies](https://docs.docker.com/engine/containers/start-containers-automatically/) — HIGH confidence (official)
+- [Docker volume permission issues](https://www.codegenes.net/blog/docker-compose-and-named-volume-permission-denied/) — MEDIUM confidence (community)
+- [SvelteKit environment variables — static/public build-time behavior](https://maier.tech/posts/environment-variables-in-sveltekit) — MEDIUM confidence (community, consistent with official docs)
+- [Zero-downtime Docker Compose deployment](https://github.com/wowu/docker-rollout) — MEDIUM confidence (community tool, widely used)
+- [GitHub Actions Docker cache](https://docs.docker.com/build/ci/github-actions/cache/) — HIGH confidence (official)
 
 ---
 
-*Pitfalls research for: milsim unit website with PERSCOM-style personnel management (ASQN 1st SFOD)*
-*Researched: 2026-02-10*
+*Pitfalls research for: CI/CD deployment pipeline — SvelteKit + Docker + Caddy + GitHub Actions (ASQN 1st SFOD v1.1 milestone)*
+*Researched: 2026-02-12*
