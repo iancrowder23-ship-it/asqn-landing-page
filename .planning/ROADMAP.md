@@ -98,10 +98,10 @@ Plans:
 1. A deploy success or failure posts a notification to the unit's Discord channel automatically
 2. All production pitfalls confirmed resolved: ORIGIN is `https://asqnmilsim.us`, port 3000 is not reachable externally, HTTPS certificate is valid (non-staging), `caddy_data` volume persists across restarts, no secrets appear in image history, deploy user is not root
 
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 10-01: Discord webhook notification on deploy success/failure + end-to-end validation checklist
+- [ ] 10-01-PLAN.md — Discord webhook notification on deploy success/failure, production ACME switch, end-to-end validation checklist
 
 ## Progress
 
@@ -121,4 +121,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-12 — Phase 9.1 complete*
+*Last updated: 2026-02-12 — Phase 10 planned*
