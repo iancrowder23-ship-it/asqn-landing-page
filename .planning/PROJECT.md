@@ -30,7 +30,17 @@ A soldier's complete service record — from enlistment to current status — is
 
 ### Active
 
-(None — define for next milestone via `/gsd:new-milestone`)
+**Current Milestone: v1.1 Production Deployment**
+
+**Goal:** Automated CI/CD pipeline — push to main deploys to production VPS with HTTPS.
+
+**Target features:**
+- GitHub repo setup and initial push
+- VPS provisioning (Docker, Caddy, firewall, SSH hardening)
+- Production Docker Compose (app + Caddy reverse proxy with auto-HTTPS)
+- GitHub Actions CI/CD (build → GHCR → SSH deploy)
+- DNS + Let's Encrypt SSL for asqnmilsim.us
+- Secrets and environment management
 
 ### Out of Scope
 
@@ -69,7 +79,7 @@ A soldier's complete service record — from enlistment to current status — is
 
 - **Auth**: Discord OAuth via Supabase Auth — members already live in Discord
 - **Database**: Supabase PostgreSQL with row-level security on every table
-- **Hosting**: Docker on VPS — self-hosted, containerized deployment
+- **Hosting**: Interserver VPS (Ubuntu), Docker, Caddy reverse proxy — self-hosted
 - **Frontend**: SvelteKit 2 + Svelte 5 (runes), custom components (no component library)
 - **Styling**: Tactical/SOF dark aesthetic — black, dark gray, muted accents, covert ops feel
 - **Data**: Fresh start for v1.0 — no migration from prior systems
@@ -93,5 +103,9 @@ A soldier's complete service record — from enlistment to current status — is
 | getClaims() direct usage | Available in @supabase/supabase-js v2.95.3 | ✓ Good — no manual JWT decode needed |
 | Dual-write to service_records | Personnel actions write to both entity table and SR log | ⚠️ Revisit — SR insert failure is non-fatal (logged, not rolled back) |
 
+| Caddy reverse proxy | Auto-HTTPS, simple config, production-grade | — Pending |
+| GitHub Actions CI/CD | Free tier, native to GitHub, standard for open/private repos | — Pending |
+| GHCR for images | Co-located with code, free for private repos, no Docker Hub limits | — Pending |
+
 ---
-*Last updated: 2026-02-12 after v1.0 milestone*
+*Last updated: 2026-02-12 after v1.1 milestone started*
