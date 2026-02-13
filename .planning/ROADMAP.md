@@ -3,6 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1-7 (shipped 2026-02-12)
+- 🚧 **v1.1 Production Deployment** — Phases 8-10 (in progress)
 
 ## Phases
 
@@ -21,6 +22,77 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 </details>
 
+### 🚧 v1.1 Production Deployment (In Progress)
+
+**Milestone Goal:** Push to main automatically builds, packages, and deploys the application to a production VPS with HTTPS. The pipeline is observable via Discord notifications and documented for future operators.
+
+- [ ] **Phase 8: VPS Provisioning and Production Compose** — Production server ready to receive deployments
+- [ ] **Phase 9: CI/CD Pipeline** — Push to main triggers automated build, push to GHCR, and SSH deploy
+- [ ] **Phase 10: Observability and Validation** — Deploy pipeline is verified end-to-end, observable, and documented
+
+## Phase Details
+
+### Phase 8: VPS Provisioning and Production Compose
+
+**Goal**: The production server is ready to receive automated deployments — Docker installed, firewall hardened, deploy user configured, DNS resolving, and a production-grade Compose stack running Caddy with auto-HTTPS and the app accessible only via the internal Docker network.
+
+**Depends on**: Phase 7 (v1.0 complete)
+
+**Requirements**: INFRA-01, INFRA-02, INFRA-03, INFRA-04, INFRA-05, COMPOSE-01, COMPOSE-02, COMPOSE-03, COMPOSE-04, COMPOSE-05, COMPOSE-06, COMPOSE-07, SEC-02
+
+**Success Criteria** (what must be TRUE):
+1. Visiting `https://asqnmilsim.us` in a browser returns the application over valid HTTPS (no certificate warning)
+2. `curl http://VPS_IP:3000` from an external host returns connection refused (app not directly reachable)
+3. VPS reboots and both containers automatically restart without manual intervention
+4. `curl https://asqnmilsim.us/health` returns HTTP 200 OK
+5. The production `.env` on the VPS contains Supabase keys and is absent from the git repository and Docker image
+
+**Plans**: TBD
+
+Plans:
+- [ ] 08-01: VPS setup — Docker CE, firewall, deploy user, SSH hardening, /opt/asqn/ directory
+- [ ] 08-02: GitHub repo and initial codebase push
+- [ ] 08-03: Production Compose — Caddy + app, internal network, restart policies, ORIGIN, TLS volume, health check endpoint
+
+### Phase 9: CI/CD Pipeline
+
+**Goal**: Pushing a commit to main triggers a two-job GitHub Actions workflow that builds the Docker image with PUBLIC_* build args, pushes it to GHCR with SHA and latest tags, and deploys to the VPS via SSH — with no secrets baked into the image.
+
+**Depends on**: Phase 8 (VPS and Compose must exist before pipeline deploys into it)
+
+**Requirements**: CICD-01, CICD-02, CICD-03, CICD-04, CICD-05, SEC-01, SEC-03
+
+**Success Criteria** (what must be TRUE):
+1. Pushing a commit to main triggers the GitHub Actions workflow within seconds
+2. A new Docker image tagged with the git SHA and `latest` appears in GHCR after the build job completes
+3. The running container on the VPS serves the code from the triggering commit within minutes of push
+4. `docker history --no-trunc <image>` shows no Supabase service role key or other runtime secrets in image layers
+5. A second push to main completes the build job faster than the first (layer cache active)
+
+**Plans**: TBD
+
+Plans:
+- [ ] 09-01: GitHub Secrets and repository configuration (SSH_HOST, SSH_USER, SSH_PRIVATE_KEY, PUBLIC_* vars)
+- [ ] 09-02: GitHub Actions workflow — build job (checkout, GHCR login, metadata, build+push with cache)
+- [ ] 09-03: GitHub Actions workflow — deploy job (SCP compose files, SSH pull, SSH up --no-deps app)
+
+### Phase 10: Observability and Validation
+
+**Goal**: The deployment pipeline is observable — failures surface in Discord immediately — and every known production pitfall has been explicitly verified as resolved before v1.1 is declared complete.
+
+**Depends on**: Phase 9 (requires a working end-to-end pipeline to validate)
+
+**Requirements**: CICD-06
+
+**Success Criteria** (what must be TRUE):
+1. A deploy success or failure posts a notification to the unit's Discord channel automatically
+2. All production pitfalls confirmed resolved: ORIGIN is `https://asqnmilsim.us`, port 3000 is not reachable externally, HTTPS certificate is valid (non-staging), `caddy_data` volume persists across restarts, no secrets appear in image history, deploy user is not root
+
+**Plans**: TBD
+
+Plans:
+- [ ] 10-01: Discord webhook notification on deploy success/failure + end-to-end validation checklist
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -32,7 +104,10 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 | 5. Enlistment, Personnel | v1.0 | 3/3 | Complete | 2026-02-11 |
 | 6. Events, Attendance, Dashboard | v1.0 | 4/4 | Complete | 2026-02-11 |
 | 7. Gap Closure | v1.0 | 1/1 | Complete | 2026-02-11 |
+| 8. VPS Provisioning and Production Compose | v1.1 | 0/3 | Not started | - |
+| 9. CI/CD Pipeline | v1.1 | 0/3 | Not started | - |
+| 10. Observability and Validation | v1.1 | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-10*
-*Last updated: 2026-02-12 — v1.0 MVP shipped*
+*Last updated: 2026-02-12 — v1.1 Production Deployment roadmap added (Phases 8-10)*

@@ -68,33 +68,33 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | — | Pending |
-| INFRA-02 | — | Pending |
-| INFRA-03 | — | Pending |
-| INFRA-04 | — | Pending |
-| INFRA-05 | — | Pending |
-| COMPOSE-01 | — | Pending |
-| COMPOSE-02 | — | Pending |
-| COMPOSE-03 | — | Pending |
-| COMPOSE-04 | — | Pending |
-| COMPOSE-05 | — | Pending |
-| COMPOSE-06 | — | Pending |
-| COMPOSE-07 | — | Pending |
-| CICD-01 | — | Pending |
-| CICD-02 | — | Pending |
-| CICD-03 | — | Pending |
-| CICD-04 | — | Pending |
-| CICD-05 | — | Pending |
-| CICD-06 | — | Pending |
-| SEC-01 | — | Pending |
-| SEC-02 | — | Pending |
-| SEC-03 | — | Pending |
+| INFRA-01 | Phase 8 | Pending |
+| INFRA-02 | Phase 8 | Pending |
+| INFRA-03 | Phase 8 | Pending |
+| INFRA-04 | Phase 8 | Pending |
+| INFRA-05 | Phase 8 | Pending |
+| COMPOSE-01 | Phase 8 | Pending |
+| COMPOSE-02 | Phase 8 | Pending |
+| COMPOSE-03 | Phase 8 | Pending |
+| COMPOSE-04 | Phase 8 | Pending |
+| COMPOSE-05 | Phase 8 | Pending |
+| COMPOSE-06 | Phase 8 | Pending |
+| COMPOSE-07 | Phase 8 | Pending |
+| SEC-02 | Phase 8 | Pending |
+| CICD-01 | Phase 9 | Pending |
+| CICD-02 | Phase 9 | Pending |
+| CICD-03 | Phase 9 | Pending |
+| CICD-04 | Phase 9 | Pending |
+| CICD-05 | Phase 9 | Pending |
+| SEC-01 | Phase 9 | Pending |
+| SEC-03 | Phase 9 | Pending |
+| CICD-06 | Phase 10 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 21 total
-- Mapped to phases: 0
-- Unmapped: 21
+- Mapped to phases: 21
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-12*
-*Last updated: 2026-02-12 after initial definition*
+*Last updated: 2026-02-12 — traceability complete (21/21 mapped to Phases 8-10)*
