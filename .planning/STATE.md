@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
-**Current focus:** v1.1 Production Deployment — Phase 9 CI/CD Pipeline IN PROGRESS (09-02 complete)
+**Current focus:** v1.1 Production Deployment — Phase 9 CI/CD Pipeline COMPLETE (09-03 verified)
 
 ## Current Position
 
-Phase: 9 of 10 (CI/CD Pipeline) — IN PROGRESS
-Plan: 2 of 3 in phase 09 — 09-02 COMPLETE
-Status: CI/CD workflow committed, ready for pipeline validation (09-03)
-Last activity: 2026-02-13 — 09-02 complete: deploy.yml workflow + docker-compose.yml image: conversion
+Phase: 9 of 10 (CI/CD Pipeline) — COMPLETE
+Plan: 3 of 3 in phase 09 — 09-03 COMPLETE
+Status: All Phase 9 plans complete — end-to-end pipeline validated and live
+Last activity: 2026-02-13 — 09-03 complete: pipeline retrigger + full verification (health, GHCR, no secrets)
 
-Progress: [████████░░] 87% (Phase 9 Plan 2 complete, Plan 3 pipeline validation next)
+Progress: [█████████░] 93% (Phase 9 complete, Phase 10 production TLS next)
 
 ## Performance Metrics
 
@@ -26,7 +26,7 @@ Progress: [████████░░] 87% (Phase 9 Plan 2 complete, Plan 3 
 - Timeline: 2 days (2026-02-10 → 2026-02-11)
 
 **v1.1 (in progress):**
-- Plans completed: 5 (08-01, 08-02, 08-03 — all Phase 8; 09-01 — GitHub Secrets; 09-02 — CI/CD workflow)
+- Plans completed: 6 (08-01, 08-02, 08-03 — all Phase 8; 09-01 — GitHub Secrets; 09-02 — CI/CD workflow; 09-03 — pipeline validation)
 
 ## Accumulated Context
 
@@ -47,10 +47,14 @@ v1.1 decisions resolved in 09-02:
 - deploy job uses `docker compose pull app` then `docker compose up -d --no-deps app` — two-step ensures correct image before restart; Caddy untouched
 - SUPABASE_SERVICE_ROLE_KEY is NOT a build-arg — stays in /opt/asqn/.env as runtime secret only
 
+v1.1 decisions resolved in 09-03:
+- CI key must be passphrase-free: asqn_deploy_ci (ed25519, no passphrase) used for GitHub Actions; asqn_deploy (passphrase-protected) retained for human/interactive use
+- SSH_PRIVATE_KEY secret updated to asqn_deploy_ci; public key added to VPS deploy user authorized_keys
+
 v1.1 decisions resolved in 09-01:
 - GHCR_USERNAME = iancrowder23-ship-it (GitHub org/account that owns the GHCR packages)
 - GHCR_PAT is a classic PAT with read:packages only — fine-grained tokens don't support packages scope
-- SSH credentials reuse the Phase 8 asqn_deploy key pair (no new key generated)
+- SSH credentials: asqn_deploy key was passphrase-protected (fixed in 09-03 with asqn_deploy_ci)
 
 v1.1 decisions resolved in 08-02:
 - GitHub repo visibility: **private** (iancrowder23-ship-it/asqn-landing-page)
@@ -81,6 +85,6 @@ v1.1 decisions resolved in 08-01 (VPS provisioning):
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Phase 9 Plan 2 COMPLETE — deploy.yml + docker-compose.yml committed (b1ad7de, a8b3efa)
+Stopped at: Phase 9 Plan 3 COMPLETE — pipeline validated end-to-end (commit 97e8c47, run 21973748681)
 Resume file: None
-Next action: Execute Phase 9 Plan 3 (pipeline validation — push to main, verify full build+deploy flow)
+Next action: Execute Phase 10 (production TLS — remove staging ACME CA from Caddyfile)
