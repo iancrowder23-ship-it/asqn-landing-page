@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** A soldier's complete service record — from enlistment to current status — is accurate, accessible, and drives unit management decisions.
-**Current focus:** v1.1 Production Deployment — Phase 9.1 Discord Auth Gate COMPLETE
+**Current focus:** v1.1 COMPLETE — all phases including Phase 10 observability and validation
 
 ## Current Position
 
-Phase: 9.1 of 10 (Discord Auth Gate) — COMPLETE
-Plan: 1 of 1 in phase 09.1 — 09.1-01 COMPLETE
-Status: Discord guild membership gate implemented — non-members rejected, members proceed
-Last activity: 2026-02-12 — 09.1-01 complete: admin client, guild check in callback, rejection page
+Phase: 10 of 10 (Observability and Validation) — COMPLETE
+Plan: 1 of 1 in phase 10 — 10-01 COMPLETE
+Status: Discord deploy notifications live, production TLS cert, 7-point validation checklist all pass — v1.1 COMPLETE
+Last activity: 2026-02-12 — 10-01 complete: Discord notify job, production ACME, force-recreate Caddy, all validation checks pass
 
-Progress: [█████████░] 96% (Phase 9.1 complete, Phase 10 observability next)
+Progress: [██████████] 100% (All 10 phases complete — v1.1 milestone achieved)
 
 ## Performance Metrics
 
@@ -25,14 +25,22 @@ Progress: [█████████░] 96% (Phase 9.1 complete, Phase 10 obs
 - Lines of code: 7,247
 - Timeline: 2 days (2026-02-10 → 2026-02-11)
 
-**v1.1 (in progress):**
-- Plans completed: 7 (08-01, 08-02, 08-03 — all Phase 8; 09-01 — GitHub Secrets; 09-02 — CI/CD workflow; 09-03 — pipeline validation; 09.1-01 — Discord Auth Gate)
+**v1.1 (COMPLETE 2026-02-12):**
+- Plans completed: 8 (08-01, 08-02, 08-03 — all Phase 8; 09-01 — GitHub Secrets; 09-02 — CI/CD workflow; 09-03 — pipeline validation; 09.1-01 — Discord Auth Gate; 10-01 — Observability and Validation)
 
 ## Accumulated Context
 
 ### Decisions
 
 All v1.0 decisions logged in PROJECT.md Key Decisions table with outcomes.
+
+v1.1 decisions resolved in 10-01:
+- sarisia/actions-status-discord@v1 for Discord notifications — JS action, fast, ecosystem standard
+- notify job status = needs.deploy.result (not its own status) — reflects actual deploy outcome
+- --force-recreate replaces --no-deps app — Caddy always restarts and picks up new Caddyfile
+- $env/dynamic/private required for SUPABASE_SERVICE_ROLE_KEY — static/private inlines at build time (key intentionally absent at build)
+- Production ACME enabled by removing global options block from Caddyfile (Caddy defaults to production LE)
+- v1.1 milestone COMPLETE — all validation checks pass, site live at https://asqnmilsim.us with production TLS
 
 v1.1 decisions resolved in 09.1-01:
 - Used Discord `/guilds/{id}/member` endpoint (single guild check, not list all guilds)
@@ -92,6 +100,6 @@ v1.1 decisions resolved in 08-01 (VPS provisioning):
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Phase 9.1 Plan 1 COMPLETE — Discord auth gate implemented (commit 462b88f)
+Stopped at: Phase 10 Plan 1 COMPLETE — v1.1 milestone achieved (commits b852579, 2d08de5)
 Resume file: None
-Next action: Execute Phase 10 (observability — Discord webhook notifications, end-to-end validation, production TLS)
+Next action: v1.1 COMPLETE — site live at https://asqnmilsim.us. Pending todo: add login button to public home page.
