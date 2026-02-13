@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A website and personnel management system for ASQN 1st SFOD (Army Squadron, 1st Special Forces Operational Detachment — Delta Force), an Arma 3 milsim unit. The public-facing site serves as the unit's front door — recruiting, info, and identity. Behind login, the personnel system tracks every soldier's career: rank, assignments, qualifications, attendance, promotions, and service history. Discord is the unit's hub; the site extends that with structured record-keeping and a professional web presence.
+A website and personnel management system for ASQN 1st SFOD (Army Squadron, 1st Special Forces Operational Detachment — Delta Force), an Arma 3 milsim unit. The public-facing site serves as the unit's front door — recruiting, info, and identity. Behind login, the personnel system tracks every soldier's career: rank, assignments, qualifications, attendance, promotions, and service history. Discord is the unit's hub; the site extends that with structured record-keeping and a professional web presence. The site is live at https://asqnmilsim.us with automated CI/CD and Discord-gated authentication.
 
 ## Core Value
 
@@ -27,20 +27,18 @@ A soldier's complete service record — from enlistment to current status — is
 - ✓ Transfer orders with effective date and reason — v1.0
 - ✓ Member status tracking (Active, LOA, AWOL, Discharged/Retired) — v1.0
 - ✓ Admin dashboard with key metrics — v1.0
+- ✓ VPS provisioned with Docker, hardened SSH, UFW firewall — v1.1
+- ✓ Production Docker Compose with Caddy reverse proxy and auto-HTTPS — v1.1
+- ✓ GitHub Actions CI/CD pipeline (push to main → GHCR → VPS deploy) — v1.1
+- ✓ Discord guild membership gate (only ASQN members can log in) — v1.1
+- ✓ Discord deploy notifications (success/failure to ops channel) — v1.1
+- ✓ Production Let's Encrypt TLS certificate — v1.1
+- ✓ /health endpoint for monitoring — v1.1
+- ✓ Secrets management (no secrets in git or Docker image layers) — v1.1
 
 ### Active
 
-**Current Milestone: v1.1 Production Deployment**
-
-**Goal:** Automated CI/CD pipeline — push to main deploys to production VPS with HTTPS.
-
-**Target features:**
-- GitHub repo setup and initial push
-- VPS provisioning (Docker, Caddy, firewall, SSH hardening)
-- Production Docker Compose (app + Caddy reverse proxy with auto-HTTPS)
-- GitHub Actions CI/CD (build → GHCR → SSH deploy)
-- DNS + Let's Encrypt SSL for asqnmilsim.us
-- Secrets and environment management
+(No active requirements — next milestone not yet defined)
 
 ### Out of Scope
 
@@ -53,37 +51,48 @@ A soldier's complete service record — from enlistment to current status — is
 - In-game stat tracking (K/D, hours) — breeds toxicity; attendance is the metric that matters
 - Forum / discussion board — Discord already handles all unit communication
 - Public leaderboards — conflicts with military culture model; awards system handles recognition
+- Kubernetes — massive overhead for single-VPS deployment
+- Terraform / IaC — overkill for one Interserver VPS
+- Self-hosted GitHub Actions runner — free tier is sufficient
+- Automated database migrations in CI — Supabase manages migration state separately
+- Zero-downtime deployment — deferred to v2 (DEPLOY-01)
+- Rollback workflow — deferred to v2 (DEPLOY-02)
 
 ## Context
 
-**Shipped:** v1.0 MVP (2026-02-12)
-**Codebase:** 7,247 LOC (TypeScript + Svelte + CSS), 81 commits
+**Shipped:** v1.0 MVP (2026-02-11) + v1.1 Production Deployment (2026-02-12)
+**Codebase:** 7,321 LOC (TypeScript + Svelte + CSS), 122 commits across 11 phases
 **Stack:** SvelteKit 2 + Svelte 5 (runes), Supabase, Tailwind v4, sveltekit-superforms + Zod v4, adapter-node
-**Deployment:** Docker on VPS (two-stage builder/runner, node:22-alpine)
+**Deployment:** Docker on VPS (163.245.216.173) — Caddy reverse proxy + auto-HTTPS, GitHub Actions CI/CD → GHCR → SSH deploy
+**Live at:** https://asqnmilsim.us
 
 **Unit:** ASQN 1st SFOD, Squadron A (Delta Force milsim)
 **Game:** Arma 3
 **Size:** Small (10-30 members)
-**Communication:** Discord-centric; Discord OAuth is the login mechanism
+**Communication:** Discord-centric; Discord OAuth is the login mechanism; only guild members can log in
 
 **Database:** 11 tables with full RLS, append-only service records, Custom Access Token Hook injecting roles into JWT
-**Auth:** Discord OAuth → Supabase Auth → JWT with user_role claim → RLS enforcement
+**Auth:** Discord OAuth → guild membership check → Supabase Auth → JWT with user_role claim → RLS enforcement
+**CI/CD:** GitHub Actions (3-job: build → deploy → notify) → GHCR → SSH to VPS → docker compose pull + up
 
 **Known Issues / Tech Debt:**
 - Awards reference table starts empty — admin must seed via Supabase dashboard
 - Discord invite URL placeholder in footer
-- `$derived()` vs `$derived.by()` in StatusBadge (cosmetic)
+- Login button missing from public home page
+- Dual-write to service_records is non-transactional (SR insert failure logged, not rolled back)
 - Discord OAuth provider + Custom Access Token Hook require manual Dashboard configuration
+- `$derived()` vs `$derived.by()` in StatusBadge (cosmetic)
 
 ## Constraints
 
-- **Auth**: Discord OAuth via Supabase Auth — members already live in Discord
+- **Auth**: Discord OAuth via Supabase Auth — members already live in Discord; guild membership required
 - **Database**: Supabase PostgreSQL with row-level security on every table
 - **Hosting**: Interserver VPS (Ubuntu), Docker, Caddy reverse proxy — self-hosted
 - **Frontend**: SvelteKit 2 + Svelte 5 (runes), custom components (no component library)
 - **Styling**: Tactical/SOF dark aesthetic — black, dark gray, muted accents, covert ops feel
 - **Data**: Fresh start for v1.0 — no migration from prior systems
 - **Storage**: Supabase Storage for rank insignia, soldier photos, unit assets
+- **CI/CD**: GitHub Actions free tier, GHCR for container images
 
 ## Key Decisions
 
@@ -102,10 +111,15 @@ A soldier's complete service record — from enlistment to current status — is
 | Partial public roster | Recruiting visibility without exposing full personnel data | ✓ Good — names + ranks only for visitors |
 | getClaims() direct usage | Available in @supabase/supabase-js v2.95.3 | ✓ Good — no manual JWT decode needed |
 | Dual-write to service_records | Personnel actions write to both entity table and SR log | ⚠️ Revisit — SR insert failure is non-fatal (logged, not rolled back) |
-
-| Caddy reverse proxy | Auto-HTTPS, simple config, production-grade | — Pending |
-| GitHub Actions CI/CD | Free tier, native to GitHub, standard for open/private repos | — Pending |
-| GHCR for images | Co-located with code, free for private repos, no Docker Hub limits | — Pending |
+| Caddy reverse proxy | Auto-HTTPS, simple config, production-grade | ✓ Good — Let's Encrypt cert auto-provisions, zero maintenance |
+| GitHub Actions CI/CD | Free tier, native to GitHub, standard for private repos | ✓ Good — 3-job pipeline (build/deploy/notify) works reliably |
+| GHCR for images | Co-located with code, free for private repos, no Docker Hub limits | ✓ Good — SHA + latest tags, layer caching via GHA backend |
+| Discord guild membership gate | Only unit members should access personnel system | ✓ Good — non-members rejected at callback, account cleaned up |
+| $env/dynamic/private for secrets | Runtime secrets must not be inlined at build time | ✓ Good — SERVICE_ROLE_KEY stays out of Docker image |
+| Staging ACME → production ACME | Protect Let's Encrypt rate limits during dev | ✓ Good — switched to production in Phase 10 |
+| Passphrase-free CI SSH key | GitHub Actions can't enter passphrases | ✓ Good — asqn_deploy_ci for CI, asqn_deploy for human use |
+| sarisia/actions-status-discord | JS action, fast, ecosystem standard for Discord notifications | ✓ Good — success + failure embeds in ops channel |
+| --force-recreate on deploy | Caddy picks up Caddyfile changes on every deploy | ✓ Good — no stale config risk |
 
 ---
-*Last updated: 2026-02-12 after v1.1 milestone started*
+*Last updated: 2026-02-12 after v1.1 milestone complete*
