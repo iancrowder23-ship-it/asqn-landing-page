@@ -47,12 +47,12 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 4. `curl https://asqnmilsim.us/health` returns HTTP 200 OK
 5. The production `.env` on the VPS contains Supabase keys and is absent from the git repository and Docker image
 
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 08-01: VPS setup — Docker CE, firewall, deploy user, SSH hardening, /opt/asqn/ directory
-- [ ] 08-02: GitHub repo and initial codebase push
-- [ ] 08-03: Production Compose — Caddy + app, internal network, restart policies, ORIGIN, TLS volume, health check endpoint
+- [ ] 08-01-PLAN.md — VPS setup: DNS A record, Docker CE, UFW firewall, deploy user, SSH hardening, /opt/asqn directory
+- [ ] 08-02-PLAN.md — GitHub repo: create private repo, push full codebase with history
+- [ ] 08-03-PLAN.md — Production Compose: /health endpoint, Caddy + app on internal network, staging ACME TLS, VPS deployment
 
 ### Phase 9: CI/CD Pipeline
 
